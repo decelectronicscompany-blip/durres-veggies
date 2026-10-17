@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Доставка фруктів та овочів | Дуррес</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 pb-24 font-sans text-gray-800">
+
+  <!-- Шапка -->
+  <header class="bg-emerald-600 text-white p-4 sticky top-0 z-10 shadow-md">
+    <div class="max-w-md mx-auto">
+      <h1 class="text-xl font-bold">🥑 Фрукти & Овочі Дуррес</h1>
+      <p id="status-banner" class="text-xs bg-emerald-700/60 mt-1 p-1.5 rounded-lg text-emerald-100 font-medium">
+        Завантаження статусу...
+      </p>
+    </div>
+  </header>
+
+  <!-- Каталог -->
+  <main class="max-w-md mx-auto p-4 space-y-3" id="products-container">
+    <p class="text-center text-gray-400 py-8">Завантаження свіжих продуктів...</p>
+  </main>
+
+  <!-- Нижній плаваючий кошик -->
+  <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg hidden">
+    <div class="max-w-md mx-auto flex justify-between items-center">
+      <div>
+        <p class="text-xs text-gray-500">Орієнтовна сума:</p>
+        <p class="text-lg font-bold text-emerald-600"><span id="cart-total">0</span> Лек</p>
+      </div>
+      <button onclick="openCheckoutModal()" class="bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-xl shadow-md hover:bg-emerald-700">
+        Оформити замовлення
+      </button>
+    </div>
+  </div>
+
+  <!-- Модальне вікно оформлення -->
+  <div id="checkout-modal" class="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center hidden">
+    <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h2 class="text-lg font-bold">Ваше замовлення</h2>
+        <button onclick="closeCheckoutModal()" class="text-gray-400 text-xl">&times;</button>
+      </div>
+
+      <div id="cart-items-list" class="space-y-2 text-sm max-h-40 overflow-y-auto border-b pb-2"></div>
+
+      <form onsubmit="sendOrder(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Ваше ім'я</label>
+          <input id="client-name" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Олена">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Телефон або Telegram/WhatsApp</label>
+          <input id="client-contact" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="+380... або @username">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Адреса доставки в Дурресі</label>
+          <input id="client-address" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Район, вулиця, номер будинку/апартаментів">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Коментар (за бажанням)</label>
+          <textarea id="client-comment" class="w-full border p-2 rounded-lg text-sm" rows="2" placeholder="Наприклад: зеленіші банани, підняти на 3 поверх"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700">
+          Надіслати замовлення
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://pynhbjloaqjxrldfsbxk.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_Mk1VZRJvR_s3Ynltjf1nsQ_bCbIy7m_';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ⚠️ Вставте сюди дані вашого Telegram-бота (коли створите через BotFather)
+    const TELEGRAM_BOT_TOKEN = 'ВСТАВТЕ_ТОКЕН_ВІД_BOTFATHER';
+    const TELEGRAM_CHAT_ID = 'ВСТАВТЕ_ВАШ_CHAT_ID';
+
+    let cart = {};
+
+    async function initCatalog() {
+      const { data: settings } = await _supabase.from('settings').select('*').single();
+      if (settings) {
+        document.getElementById('status-banner').innerText = settings.status_text;
+      }
+
+      const { data: products } = await _supabase.from('products').select('*').order('id', { ascending: true });
+      const container = document.getElementById('products-container');
+      container.innerHTML = '';
+
+      products.forEach(p => {
+        if (!p.is_available) return;
+
+        const card = document.createElement('div');
+        card.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center";
+        card.innerHTML = `
+          <div>
+            <h3 class="font-bold text-gray-800">${p.title}</h3>
+            <p class="text-sm font-semibold text-emerald-600">${p.price} Лек <span class="text-xs text-gray-400 font-normal">/ ${p.unit}</span></p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="changeQty(${p.id}, '${p.title}', ${p.price}, '${p.unit}', -1)" class="w-8 h-8 rounded-lg bg-gray-100 font-bold text-gray-600 hover:bg-gray-200">-</button>
+            <span id="qty-${p.id}" class="font-bold text-sm min-w-[20px] text-center">0</span>
+            <button onclick="changeQty(${p.id}, '${p.title}', ${p.price}, '${p.unit}', 1)" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold hover:bg-emerald-200">+</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function changeQty(id, title, price, unit, change) {
+      if (!cart[id]) {
+        cart[id] = { title, price, unit, qty: 0 };
+      }
+      cart[id].qty += change;
+      if (cart[id].qty <= 0) {
+        delete cart[id];
+      }
+
+      document.getElementById(`qty-${id}`).innerText = cart[id] ? cart[id].qty : 0;
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      let total = 0;
+      let count = 0;
+      for (const id in cart) {
+        total += cart[id].price * cart[id].qty;
+        count += cart[id].qty;
+      }
+
+      document.getElementById('cart-total').innerText = total;
+      const cartBar = document.getElementById('cart-bar');
+      if (count > 0) {
+        cartBar.classList.remove('hidden');
+      } else {
+        cartBar.classList.add('hidden');
+      }
+    }
+
+    function openCheckoutModal() {
+      const list = document.getElementById('cart-items-list');
+      list.innerHTML = '';
+      for (const id in cart) {
+        const item = cart[id];
+        list.innerHTML += `<div class="flex justify-between"><span>${item.title} (${item.qty} ${item.unit})</span> <span class="font-semibold">${item.price * item.qty} Лек</span></div>`;
+      }
+      document.getElementById('checkout-modal').classList.remove('hidden');
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkout-modal').classList.add('hidden');
+    }
+
+    async function sendOrder(e) {
+      e.preventDefault();
+      const name = document.getElementById('client-name').value;
+      const contact = document.getElementById('client-contact').value;
+      const address = document.getElementById('client-address').value;
+      const comment = document.getElementById('client-comment').value;
+
+      let orderText = `🛒 Нове замовлення у Дурресі!\n\n`;
+      orderText += `👤 Ім'я: ${name}\n`;
+      orderText += `📞 Контакт: ${contact}\n`;
+      orderText += `📍 Адреса: ${address}\n`;
+      if (comment) orderText += `💬 Коментар: ${comment}\n\n`;
+      orderText += `📦 Товари у кошику:\n`;
+
+      let total = 0;
+      for (const id in cart) {
+        const item = cart[id];
+        const sum = item.price * item.qty;
+        total += sum;
+        orderText += `• ${item.title}: ${item.qty} ${item.unit} = ${sum} Лек\n`;
+      }
+      orderText += `\n💰 Загальна сума: ~${total} Лек`;
+
+      // Відправка в Telegram
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: orderText
+          })
+        });
+      } catch (err) {
+        console.error('Помилка відправки в Telegram:', err);
+      }
+
+      alert('Дякуємо! Ваше замовлення прийнято в обробку. Ми звʼяжемося з вами найближчим часом.');
+      closeCheckoutModal();
+      cart = {};
+      initCatalog();
+      updateCartUI();
+    }
+
+    initCatalog();
+  </script>
+</body>
+</html>
