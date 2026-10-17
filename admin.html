@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Адмінка | Доставка Дуррес</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 p-4 md:p-8 font-sans text-gray-800">
+
+  <div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
+      <h1 class="text-2xl font-bold text-emerald-600">⚙️ Адмін-панель</h1>
+      <a href="index.html" target="_blank" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg font-medium">👀 Відкрити сайт</a>
+    </div>
+
+    <!-- Налаштування шапки сайту -->
+    <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
+      <h2 class="text-lg font-bold text-gray-700">📌 Блок-статус на сайті</h2>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <input id="status-input" type="text" class="flex-1 border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Текст статусу...">
+        <button onclick="updateStatus()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-lg transition">Зберегти</button>
+      </div>
+    </div>
+
+    <!-- Швидке додавання нового товару -->
+    <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
+      <h2 class="text-lg font-bold text-gray-700">➕ Додати новий товар</h2>
+      <form id="add-product-form" onsubmit="addProduct(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <input id="new-title" type="text" placeholder="Назва (напр. Яблука)" required class="border p-2 rounded-lg col-span-1 sm:col-span-2">
+        <input id="new-price" type="number" placeholder="Ціна (Лек)" required class="border p-2 rounded-lg">
+        <select id="new-unit" class="border p-2 rounded-lg">
+          <option value="кг">кг</option>
+          <option value="шт">шт</option>
+          <option value="пучок">пучок</option>
+          <option value="упаковка">упаковка</option>
+        </select>
+        <button type="submit" class="sm:col-span-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg">Додати товар</button>
+      </form>
+    </div>
+
+    <!-- Таблиця товарів -->
+    <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
+      <h2 class="text-lg font-bold text-gray-700">🥗 Управління позиціями</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b text-gray-500 text-sm">
+              <th class="pb-2">Товар</th>
+              <th class="pb-2 w-32">Ціна (Лек)</th>
+              <th class="pb-2 text-center">Наявність</th>
+              <th class="pb-2 text-right">Дії</th>
+            </tr>
+          </thead>
+          <tbody id="products-list" class="divide-y">
+            <!-- Список завантажується скриптом -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://pynhbjloaqjxrldfsbxk.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_Mk1VZRJvR_s3Ynltjf1nsQ_bCbIy7m_';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadAdminData() {
+      const { data: settings } = await _supabase.from('settings').select('*').single();
+      if (settings) {
+        document.getElementById('status-input').value = settings.status_text;
+      }
+
+      const { data: products } = await _supabase.from('products').select('*').order('id', { ascending: true });
+      const tbody = document.getElementById('products-list');
+      tbody.innerHTML = '';
+
+      products.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.className = p.is_available ? '' : 'bg-gray-50 opacity-60';
+        tr.innerHTML = `
+          <td class="py-3 font-medium">${p.title} <span class="text-xs text-gray-400">(${p.unit})</span></td>
+          <td class="py-3">
+            <input type="number" value="${p.price}" onchange="updatePrice(${p.id}, this.value)" class="w-20 border px-2 py-1 rounded text-sm font-semibold">
+          </td>
+          <td class="py-3 text-center">
+            <button onclick="toggleAvailability(${p.id}, ${p.is_available})" class="px-3 py-1 rounded-full text-xs font-bold ${p.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+              ${p.is_available ? '🟢 В наявності' : '🔴 Вимкнено'}
+            </button>
+          </td>
+          <td class="py-3 text-right">
+            <button onclick="deleteProduct(${p.id})" class="text-red-500 hover:text-red-700 text-sm">🗑</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateStatus() {
+      const text = document.getElementById('status-input').value;
+      await _supabase.from('settings').update({ status_text: text }).eq('id', 1);
+      alert('Статус оновлено!');
+    }
+
+    async function updatePrice(id, newPrice) {
+      await _supabase.from('products').update({ price: parseFloat(newPrice) }).eq('id', id);
+    }
+
+    async function toggleAvailability(id, currentStatus) {
+      await _supabase.from('products').update({ is_available: !currentStatus }).eq('id', id);
+      loadAdminData();
+    }
+
+    async function addProduct(e) {
+      e.preventDefault();
+      const title = document.getElementById('new-title').value;
+      const price = parseFloat(document.getElementById('new-price').value);
+      const unit = document.getElementById('new-unit').value;
+
+      await _supabase.from('products').insert([{ title, price, unit, is_available: true }]);
+      document.getElementById('add-product-form').reset();
+      loadAdminData();
+    }
+
+    async function deleteProduct(id) {
+      if (confirm('Видалити цей товар?')) {
+        await _supabase.from('products').delete().eq('id', id);
+        loadAdminData();
+      }
+    }
+
+    loadAdminData();
+  </script>
+</body>
+</html>
