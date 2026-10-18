@@ -56,7 +56,7 @@
     <p class="text-center text-gray-400 py-8" id="txt-loading">Завантаження свіжих продуктів...</p>
   </main>
 
-  <!-- Футер з мовами та аккуратною кнопкою чату у центрі -->
+  <!-- Футер з мовами та акуратною кнопкою чату у центрі -->
   <footer class="max-w-md mx-auto px-4 py-6 border-t mt-8 text-center space-y-4 text-xs text-gray-500">
     <div class="space-y-2">
       <p class="font-semibold text-gray-600" id="txt-lang-title">Мова / Language / Gjuha:</p>
@@ -122,7 +122,7 @@
               📍 Взяти мою геоточку
             </button>
           </div>
-          <input id="client-address" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Напр: Shkodër, біля маркету / або вставте посилання з Maps">
+          <input id="client-address" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Напр: біля маркету / або посилання з Maps">
         </div>
 
         <div>
@@ -155,6 +155,9 @@
     const TELEGRAM_CHAT_ID = '8487483803';
 
     let currentLang = localStorage.getItem('app_lang') || 'uk';
+    let cart = {};
+    let productsCache = [];
+    let deferredPrompt = null;
 
     const productDictionary = {
       "ОВОЧІ": { en: "VEGETABLES", sq: "PERIME", ru: "ОВОЩИ" },
@@ -351,7 +354,6 @@
         (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
-          // Формуємо пряме посилання на Google Maps із координатами
           addressInput.value = `📍 Геоточка (GPS): https://maps.google.com/?q=${lat},${lon}`;
           geoBtn.innerText = "✅ Готово!";
           setTimeout(() => {
@@ -406,7 +408,7 @@
         }
       });
 
-      if (productsCache.length > 0) {
+      if (productsCache && productsCache.length > 0) {
         renderCatalog(productsCache);
         updateCartUI();
       }
@@ -415,10 +417,6 @@
     function changeLanguage(lang) {
       applyLanguage(lang);
     }
-
-    let cart = {};
-    let productsCache = [];
-    let deferredPrompt = null;
 
     function loadSavedUserData() {
       const savedName = localStorage.getItem('client_name');
@@ -476,7 +474,6 @@
     async function initCatalog() {
       try {
         loadSavedUserData();
-        applyLanguage(currentLang);
 
         const { data: settings } = await _supabase.from('settings').select('*').single();
         if (settings && settings.status_text) {
@@ -484,15 +481,12 @@
         }
 
         const { data: products } = await _supabase.from('products').select('*').order('id', { ascending: true });
-        const container = document.getElementById('products-container');
-
-        if (!products || products.length === 0) {
-          container.innerHTML = `<p class="text-center text-gray-500 py-8">${translations[currentLang].noProducts}</p>`;
-          return;
+        
+        if (products && products.length > 0) {
+          productsCache = products;
         }
 
-        productsCache = products;
-        renderCatalog(products);
+        applyLanguage(currentLang);
 
       } catch (err) {
         console.error(err);
