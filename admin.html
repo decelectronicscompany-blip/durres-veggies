@@ -35,13 +35,15 @@
         
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Категорія</label>
-          <select id="new-category" class="w-full border p-2 rounded-lg text-sm bg-white">
+          <select id="new-category-select" onchange="handleCategoryChange(this)" class="w-full border p-2 rounded-lg text-sm bg-white">
             <option value="ОВОЧІ">🍅 Овочі</option>
             <option value="ФРУКТИ">🍏 Фрукти</option>
             <option value="ЗЕЛЕНЬ">🌿 Зелень</option>
             <option value="ЯГОДИ">🍓 Ягоди</option>
             <option value="ІНШЕ">🛒 Інше</option>
+            <option value="__NEW__">➕ Створити нову категорію...</option>
           </select>
+          <input id="new-category-custom" type="text" placeholder="Введіть назву категорії" class="w-full border p-2 rounded-lg text-sm mt-2 hidden">
         </div>
 
         <div>
@@ -56,6 +58,8 @@
             <option value="шт">шт</option>
             <option value="пучок">пучок</option>
             <option value="упаковка">упаковка</option>
+            <option value="сітка">сітка</option>
+            <option value="лоток">лоток</option>
           </select>
         </div>
 
@@ -113,6 +117,25 @@
         return;
       }
 
+      // Динамічне оновлення списку категорій у селекті
+      const customCategories = new Set(['ОВОЧІ', 'ФРУКТИ', 'ЗЕЛЕНЬ', 'ЯГОДИ', 'ІНШЕ']);
+      products.forEach(p => { if (p.category) customCategories.add(p.category.toUpperCase()); });
+      
+      const selectEl = document.getElementById('new-category-select');
+      const currentValue = selectEl.value;
+      selectEl.innerHTML = '';
+      customCategories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.innerText = cat;
+        selectEl.appendChild(option);
+      });
+      const newOption = document.createElement('option');
+      newOption.value = '__NEW__';
+      newOption.innerText = '➕ Створити нову категорію...';
+      selectEl.appendChild(newOption);
+      selectEl.value = currentValue !== '__NEW__' && customCategories.has(currentValue) ? currentValue : Array.from(customCategories)[0];
+
       products.forEach(p => {
         const tr = document.createElement('tr');
         tr.className = p.is_available ? '' : 'bg-gray-50 opacity-60';
@@ -140,6 +163,18 @@
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    function handleCategoryChange(select) {
+      const customInput = document.getElementById('new-category-custom');
+      if (select.value === '__NEW__') {
+        customInput.classList.remove('hidden');
+        customInput.required = true;
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+        customInput.required = false;
+      }
     }
 
     async function updateStatus() {
@@ -189,7 +224,12 @@
       submitBtn.innerText = 'Обробка та збереження...';
 
       const title = document.getElementById('new-title').value;
-      const category = document.getElementById('new-category').value;
+      const selectCat = document.getElementById('new-category-select').value;
+      const customCat = document.getElementById('new-category-custom').value.trim();
+      
+      let category = selectCat === '__NEW__' ? customCat.toUpperCase() : selectCat;
+      if (!category) category = 'ІНШЕ';
+
       const price = parseFloat(document.getElementById('new-price').value);
       const unit = document.getElementById('new-unit').value;
       
@@ -205,6 +245,7 @@
       await _supabase.from('products').insert([{ title, category, price, unit, image_url, is_available: true }]);
       
       document.getElementById('add-product-form').reset();
+      document.getElementById('new-category-custom').classList.add('hidden');
       submitBtn.disabled = false;
       submitBtn.innerText = 'Додати товар у каталог';
       loadAdminData();
