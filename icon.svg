@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Смарагдовий фон із закругленими кутами (стиль додатків) -->
+  <rect width="512" height="512" rx="110" fill="#059669" />
+  <!-- Авокадо як символ свіжих овочів та фруктів -->
+  <text x="50%" y="54%" font-size="240" text-anchor="middle" dominant-baseline="middle">🥑</text>
+</svg>
