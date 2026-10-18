@@ -137,6 +137,45 @@
 
     let currentLang = localStorage.getItem('app_lang') || 'uk';
 
+    // Словник автоматичного перекладу популярних товарів та категорій
+    const productDictionary = {
+      // Категорії
+      "ОВОЧІ": { en: "VEGETABLES", sq: "PERIME", ru: "ОВОЩИ" },
+      "ФРУКТИ": { en: "FRUITS", sq: "PEMË", ru: "ФРУКТЫ" },
+      "ЗЕЛЕНЬ": { en: "HERBS", sq: "ERËZA", ru: "ЗЕЛЕНЬ" },
+      "ЯГОДИ": { en: "BERRIES", sq: "FRUTA MALIT", ru: "ЯГОДЫ" },
+      "ІНШЕ": { en: "OTHER", sq: "TË TJERA", ru: "ДРУГОЕ" },
+
+      // Популярні позиції
+      "Помідори рожеві": { en: "Pink Tomatoes", sq: "Domate rozë", ru: "Помидоры розовые" },
+      "Огірки місцеві": { en: "Local Cucumbers", sq: "Kastravecë vendi", ru: "Огурцы местные" },
+      "Картопля молода": { en: "Young Potatoes", sq: "Patate të reja", ru: "Картофель молодой" },
+      "Полуниця": { en: "Strawberries", sq: "Dredhëza", ru: "Клубника" },
+      "Апельсини": { en: "Oranges", sq: "Portokalle", ru: "Апельсины" },
+      "Зелень (петрушка/кроп)": { en: "Herbs (parsley/dill)", sq: "Erzat (pershesh/dill)", ru: "Зелень (петрушка/укроп)" },
+      "Яблука Гала": { en: "Gala Apples", sq: "Molla Gala", ru: "Яблоки Гала" },
+      "Банани": { en: "Bananas", sq: "Banane", ru: "Бананы" },
+      "Лимони": { en: "Lemons", sq: "Limona", ru: "Лимоны" },
+      "Морква": { en: "Carrots", sq: "Karota", ru: "Морковь" },
+      "Цибуля": { en: "Onions", sq: "Qepë", ru: "Лук" },
+      "Перець": { en: "Peppers", sq: "Speca", ru: "Перец" },
+      "Часник": { en: "Garlic", sq: "Hudhër", ru: "Чеснок" },
+      "Кавун": { en: "Watermelon", sq: "Shalqinj", ru: "Арбуз" },
+      "Диня": { en: "Melon", sq: "Pjepër", ru: "Дыня" },
+      "Виноград": { en: "Grapes", sq: "Rrush", ru: "Виноград" },
+      "Авокадо": { en: "Avocado", sq: "Avokado", ru: "Авокадо" }
+    };
+
+    // Функція отримати перекладений текст (якщо немає у словнику, залишає оригінал)
+    function getTranslatedTerm(text) {
+      if (currentLang === 'uk' || !text) return text;
+      const entry = productDictionary[text];
+      if (entry && entry[currentLang]) {
+        return entry[currentLang];
+      }
+      return text;
+    }
+
     const translations = {
       uk: {
         headerTitle: "🥑 Фрукти & Овочі Дуррес",
@@ -286,7 +325,6 @@
       document.getElementById('opt-time-2').innerText = t.time2;
       document.getElementById('opt-time-3').innerText = t.time3;
 
-      // Підсвітка активної мови в футері
       ['uk', 'en', 'sq', 'ru'].forEach(l => {
         const btn = document.getElementById(`lang-btn-${l}`);
         if (l === lang) {
@@ -410,9 +448,11 @@
       }
 
       for (const category in groups) {
+        const translatedCategory = getTranslatedTerm(category);
+
         const catBtn = document.createElement('button');
         catBtn.className = "bg-white text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-200 shadow-sm hover:bg-emerald-50 transition";
-        catBtn.innerText = category;
+        catBtn.innerText = translatedCategory;
         catBtn.onclick = () => {
           const el = document.getElementById(`cat-section-${category}`);
           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -422,12 +462,13 @@
         const section = document.createElement('div');
         section.id = `cat-section-${category}`;
         section.className = "space-y-2 pt-2";
-        section.innerHTML = `<h2 class="text-sm font-bold text-emerald-700 uppercase tracking-wider px-1">${category}</h2>`;
+        section.innerHTML = `<h2 class="text-sm font-bold text-emerald-700 uppercase tracking-wider px-1">${translatedCategory}</h2>`;
         
         const itemsWrapper = document.createElement('div');
         itemsWrapper.className = "space-y-2";
 
         groups[category].forEach(p => {
+          const translatedTitle = getTranslatedTerm(p.title);
           const card = document.createElement('div');
           card.className = "bg-white p-3.5 rounded-xl shadow-sm border flex flex-col justify-between";
           
@@ -436,14 +477,14 @@
           
           if (p.image_url) {
             photoButtonHtml = `<button onclick="togglePhoto(${p.id})" class="text-xs text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded font-medium transition">${t.photoBtn}</button>`;
-            photoContainerHtml = `<div id="photo-${p.id}" class="hidden mt-2 pt-2 border-t"><img src="${p.image_url}" alt="${p.title}" class="w-full h-40 object-cover rounded-lg shadow-inner"></div>`;
+            photoContainerHtml = `<div id="photo-${p.id}" class="hidden mt-2 pt-2 border-t"><img src="${p.image_url}" alt="${translatedTitle}" class="w-full h-40 object-cover rounded-lg shadow-inner"></div>`;
           }
 
           card.innerHTML = `
             <div class="flex justify-between items-center">
               <div class="space-y-0.5">
                 <div class="flex items-center gap-2">
-                  <h3 class="font-bold text-gray-800 text-sm sm:text-base">${p.title}</h3>
+                  <h3 class="font-bold text-gray-800 text-sm sm:text-base">${translatedTitle}</h3>
                   ${photoButtonHtml}
                 </div>
                 <p class="text-sm font-semibold text-emerald-600">${p.price} Лек <span class="text-xs text-gray-400 font-normal">/ ${p.unit}</span></p>
@@ -519,7 +560,8 @@
         const item = cart[id];
         const sum = item.price * item.qty;
         total += sum;
-        list.innerHTML += `<div class="flex justify-between"><span>${item.title} (${item.qty} ${item.unit})</span> <span class="font-semibold">${sum} Лек</span></div>`;
+        const translatedTitle = getTranslatedTerm(item.title);
+        list.innerHTML += `<div class="flex justify-between"><span>${translatedTitle} (${item.qty} ${item.unit})</span> <span class="font-semibold">${sum} Лек</span></div>`;
       }
 
       const modalNotice = document.getElementById('modal-delivery-notice');
