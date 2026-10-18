@@ -47,7 +47,7 @@
   <!-- Швидка симетрична навігація по категоріях -->
   <div class="max-w-md mx-auto px-4 pt-4">
     <div id="category-nav" class="bg-white p-1.5 rounded-2xl border shadow-sm flex flex-wrap justify-center items-center gap-1.5">
-      <!-- Генерується динамічно та симетрично -->
+      <!-- Генерується динамічно -->
     </div>
   </div>
 
@@ -71,7 +71,6 @@
       </div>
     </div>
 
-    <!-- Кнопка зв'язку по центру під мовами -->
     <div class="pt-2">
       <a href="https://t.me/durres_veggies" target="_blank" class="inline-flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-100 transition shadow-sm">
         <span>💬</span>
@@ -114,10 +113,18 @@
           <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-contact">Телефон або Telegram/WhatsApp</label>
           <input id="client-contact" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="+380... або @username">
         </div>
+        
+        <!-- Геолокація та адреса -->
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-address">Адреса доставки в Дурресі</label>
-          <input id="client-address" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Район, вулиця, номер будинку">
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-semibold text-gray-600" id="lbl-address">Адреса або посилання на геоточку</label>
+            <button type="button" onclick="getMyLocation()" class="text-[11px] text-emerald-600 font-bold hover:underline bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200" id="btn-geo">
+              📍 Взяти мою геоточку
+            </button>
+          </div>
+          <input id="client-address" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Напр: Shkodër, біля маркету / або вставте посилання з Maps">
         </div>
+
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-time">Бажаний час доставки</label>
           <select id="delivery-time" class="w-full border p-2 rounded-lg text-sm bg-white">
@@ -196,7 +203,9 @@
         modalTitle: "Ваше замовлення",
         lblName: "Ваше ім'я",
         lblContact: "Телефон або Telegram/WhatsApp",
-        lblAddress: "Адреса доставки в Дурресі",
+        lblAddress: "Адреса або посилання на геоточку",
+        addrPlaceholder: "Напр: Shkodër, біля маркету / або посилання з Maps",
+        btnGeo: "📍 Взяти мою геоточку",
         lblTime: "Бажаний час доставки",
         lblComment: "Коментар (за бажанням)",
         commentPlaceholder: "Наприклад: зеленіші банани, підняти на 3 поверх",
@@ -211,6 +220,8 @@
         allDisabled: "Всі товари тимчасово вимкнені.",
         successAlert: "Дякуємо! Ваше замовлення прийнято в обробку.",
         chatBtn: "Написати нам у Telegram",
+        geoLoading: "Визначення локації...",
+        geoError: "Не вдалося отримати геолокацію. Дозвольте доступ у браузері.",
         timeAsap: "⚡ Якомога швидше",
         time1: "☀️ 12:00 - 15:00",
         time2: "⛅ 15:00 - 18:00",
@@ -227,7 +238,9 @@
         modalTitle: "Your Order",
         lblName: "Your Name",
         lblContact: "Phone or Telegram/WhatsApp",
-        lblAddress: "Delivery Address in Durrës",
+        lblAddress: "Address or Map Location Link",
+        addrPlaceholder: "e.g., near market / or paste Google Maps link",
+        btnGeo: "📍 Get my GPS location",
         lblTime: "Preferred Delivery Time",
         lblComment: "Comment (optional)",
         commentPlaceholder: "e.g., greener bananas, 3rd floor",
@@ -242,6 +255,8 @@
         allDisabled: "All products are temporarily disabled.",
         successAlert: "Thank you! Your order has been placed.",
         chatBtn: "Contact us on Telegram",
+        geoLoading: "Getting location...",
+        geoError: "Could not get location. Allow browser permission.",
         timeAsap: "⚡ As soon as possible",
         time1: "☀️ 12:00 - 15:00",
         time2: "⛅ 15:00 - 18:00",
@@ -258,7 +273,9 @@
         modalTitle: "Porosia juaj",
         lblName: "Emri juaj",
         lblContact: "Telefon ose Telegram/WhatsApp",
-        lblAddress: "Adresa e dorëzimit në Durrës",
+        lblAddress: "Adresa ose linku i vendndodhjes",
+        addrPlaceholder: "p.sh. afër marketit / ose vendos linkun e Maps",
+        btnGeo: "📍 Merr lokacionin tim",
         lblTime: "Koha e preferuar e dorëzimit",
         lblComment: "Koment (opsionale)",
         commentPlaceholder: "p.sh. banane më të gjelbra, kati 3",
@@ -273,6 +290,8 @@
         allDisabled: "Të gjitha produktet janë përkohësisht të çaktivizuara.",
         successAlert: "Faleminderit! Porosia juaj u pranua.",
         chatBtn: "Na shkruani në Telegram",
+        geoLoading: "Duke marrë lokacionin...",
+        geoError: "Nuk u mor dot lokacioni. Lejoni qasjen në shfletues.",
         timeAsap: "⚡ Sa më shpejt të jetë e mundur",
         time1: "☀️ 12:00 - 15:00",
         time2: "⛅ 15:00 - 18:00",
@@ -289,7 +308,9 @@
         modalTitle: "Ваш заказ",
         lblName: "Ваше имя",
         lblContact: "Телефон или Telegram/WhatsApp",
-        lblAddress: "Адрес доставки в Дурресе",
+        lblAddress: "Адрес или ссылка на геоточку",
+        addrPlaceholder: "Напр: возле маркета / или вставьте ссылку из Maps",
+        btnGeo: "📍 Взять мою геоточку",
         lblTime: "Желаемое время доставки",
         lblComment: "Комментарий (по желанию)",
         commentPlaceholder: "Например: более зеленые бананы, 3 этаж",
@@ -304,12 +325,48 @@
         allDisabled: "Все товары временно отключены.",
         successAlert: "Спасибо! Ваш заказ принят в обработку.",
         chatBtn: "Написать нам в Telegram",
+        geoLoading: "Определение локации...",
+        geoError: "Не удалось получить геолокацию. Разрешите доступ в браузере.",
         timeAsap: "⚡ Как можно скорее",
         time1: "☀️ 12:00 - 15:00",
         time2: "⛅ 15:00 - 18:00",
         time3: "🌙 18:00 - 21:00"
       }
     };
+
+    function getMyLocation() {
+      const t = translations[currentLang];
+      const addressInput = document.getElementById('client-address');
+      const geoBtn = document.getElementById('btn-geo');
+
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser");
+        return;
+      }
+
+      geoBtn.innerText = t.geoLoading;
+      geoBtn.disabled = true;
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          // Формуємо пряме посилання на Google Maps із координатами
+          addressInput.value = `📍 Геоточка (GPS): https://maps.google.com/?q=${lat},${lon}`;
+          geoBtn.innerText = "✅ Готово!";
+          setTimeout(() => {
+            geoBtn.innerText = t.btnGeo;
+            geoBtn.disabled = false;
+          }, 3000);
+        },
+        (error) => {
+          alert(t.geoError);
+          geoBtn.innerText = t.btnGeo;
+          geoBtn.disabled = false;
+        },
+        { enableHighAccuracy: true }
+      );
+    }
 
     function applyLanguage(lang) {
       currentLang = lang;
@@ -327,6 +384,8 @@
       document.getElementById('lbl-name').innerText = t.lblName;
       document.getElementById('lbl-contact').innerText = t.lblContact;
       document.getElementById('lbl-address').innerText = t.lblAddress;
+      document.getElementById('client-address').placeholder = t.addrPlaceholder;
+      document.getElementById('btn-geo').innerText = t.btnGeo;
       document.getElementById('lbl-time').innerText = t.lblTime;
       document.getElementById('lbl-comment').innerText = t.lblComment;
       document.getElementById('client-comment').placeholder = t.commentPlaceholder;
@@ -611,7 +670,7 @@
       let orderText = `🛒 Нове замовлення у Дурресі! (Мова: ${currentLang.toUpperCase()})\n\n`;
       orderText += `👤 Ім'я: ${name}\n`;
       orderText += `📞 Контакт: ${contact}\n`;
-      orderText += `📍 Адреса: ${address}\n`;
+      orderText += `📍 Адреса / Геоточка: ${address}\n`;
       orderText += `⏰ Час доставки: ${deliveryTime}\n`;
       if (comment) orderText += `💬 Коментар: ${comment}\n\n`;
       orderText += `📦 Товари у кошику:\n`;
