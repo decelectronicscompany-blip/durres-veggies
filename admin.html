@@ -9,7 +9,7 @@
 </head>
 <body class="bg-gray-100 p-4 md:p-8 font-sans text-gray-800">
 
-  <div class="max-w-3xl mx-auto space-y-6">
+  <div class="max-w-4xl mx-auto space-y-6">
     <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
       <h1 class="text-2xl font-bold text-emerald-600">⚙️ Адмін-панель</h1>
       <a href="index.html" target="_blank" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg font-medium">👀 Відкрити сайт</a>
@@ -19,7 +19,7 @@
     <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
       <h2 class="text-lg font-bold text-gray-700">📌 Блок-статус на сайті</h2>
       <div class="flex flex-col sm:flex-row gap-3">
-        <input id="status-input" type="text" class="flex-1 border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Замовлення на сьогодні приймаються до 14:00 🧅">
+        <input id="status-input" type="text" class="flex-1 border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Замовлення приймаються до 14:00 🥦">
         <button onclick="updateStatus()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-lg transition">Зберегти</button>
       </div>
     </div>
@@ -27,10 +27,10 @@
     <!-- Додавання нового товару -->
     <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
       <h2 class="text-lg font-bold text-gray-700">➕ Додати новий товар</h2>
-      <form id="add-product-form" onsubmit="addProduct(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <form id="add-product-form" onsubmit="addProduct(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Назва товару</label>
-          <input id="new-title" type="text" placeholder="Яблука Гала" required class="w-full border p-2 rounded-lg text-sm">
+          <input id="new-title" type="text" placeholder="Помідори рожеві" required class="w-full border p-2 rounded-lg text-sm">
         </div>
         
         <div>
@@ -41,16 +41,11 @@
             <option value="ЗЕЛЕНЬ">🌿 Зелень</option>
             <option value="ЯГОДИ">🍓 Ягоди</option>
             <option value="ІНШЕ">🛒 Інше</option>
-            <option value="__NEW__">➕ Створити нову категорію...</option>
+            <option value="__NEW__">➕ Створити нову...</option>
           </select>
           <input id="new-category-custom" type="text" placeholder="Введіть назву категорії" class="w-full border p-2 rounded-lg text-sm mt-2 hidden">
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Ціна (Лек)</label>
-          <input id="new-price" type="number" placeholder="180" required class="w-full border p-2 rounded-lg text-sm">
-        </div>
-        
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Одиниця виміру</label>
           <select id="new-unit" class="w-full border p-2 rounded-lg text-sm bg-white">
@@ -60,17 +55,27 @@
             <option value="упаковка">упаковка</option>
             <option value="сітка">сітка</option>
             <option value="лоток">лоток</option>
+            <option value="ящик">ящик</option>
           </select>
         </div>
 
-        <div class="sm:col-span-2 space-y-2 border-t pt-3 mt-1">
-          <label class="block text-xs font-semibold text-gray-600">Завантажити фото товару:</label>
-          <input id="new-image-file" type="file" accept="image/*" class="w-full border p-2 rounded-lg text-sm bg-gray-50 file:mr-4 file:py-1.5 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-          <p class="text-[11px] text-gray-400">Або вкажіть пряме посилання на фото (URL):</p>
-          <input id="new-image-url" type="url" placeholder="https://..." class="w-full border p-2 rounded-lg text-sm">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Роздрібна ціна (Лек)</label>
+          <input id="new-price" type="number" placeholder="180" required class="w-full border p-2 rounded-lg text-sm">
         </div>
 
-        <button type="submit" id="submit-btn" class="sm:col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition mt-2">
+        <div>
+          <label class="block text-xs font-semibold text-emerald-700 mb-1">🏢 Оптова ціна B2B (Лек)</label>
+          <input id="new-b2b-price" type="number" placeholder="150 (необов'язково)" class="w-full border border-emerald-300 p-2 rounded-lg text-sm bg-emerald-50/30">
+        </div>
+        
+        <div class="sm:col-span-3 space-y-2 border-t pt-3 mt-1">
+          <label class="block text-xs font-semibold text-gray-600">Завантажити фото товару:</label>
+          <input id="new-image-file" type="file" accept="image/*" class="w-full border p-2 rounded-lg text-sm bg-gray-50 file:mr-4 file:py-1.5 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+          <input id="new-image-url" type="url" placeholder="Або пряме посилання https://..." class="w-full border p-2 rounded-lg text-sm">
+        </div>
+
+        <button type="submit" id="submit-btn" class="sm:col-span-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition mt-2">
           Додати товар у каталог
         </button>
       </form>
@@ -78,19 +83,20 @@
 
     <!-- Список товарів -->
     <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
-      <h2 class="text-lg font-bold text-gray-700">🥗 Управління позиціями</h2>
+      <h2 class="text-lg font-bold text-gray-700">🥗 Управління позиціями та цінами</h2>
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="border-b text-gray-500 text-sm">
-              <th class="pb-2">Товар / Категорія</th>
-              <th class="pb-2 w-28">Ціна (Лек)</th>
+              <th class="pb-2">Товар</th>
+              <th class="pb-2 w-28">Роздріб (Лек)</th>
+              <th class="pb-2 w-28 text-emerald-700">Опт B2B (Лек)</th>
               <th class="pb-2 text-center">Наявність</th>
               <th class="pb-2 text-right">Дії</th>
             </tr>
           </thead>
           <tbody id="products-list" class="divide-y">
-            <!-- Завантажується динамічно -->
+            <!-- Динамічно -->
           </tbody>
         </table>
       </div>
@@ -105,12 +111,12 @@
             <tr class="border-b text-gray-500 text-sm">
               <th class="pb-2">Ім'я</th>
               <th class="pb-2">Контакт</th>
-              <th class="pb-2">Адреса в Дурресі</th>
+              <th class="pb-2">Адреса / Геоточка</th>
               <th class="pb-2 text-right">Останнє замовлення</th>
             </tr>
           </thead>
           <tbody id="clients-list" class="divide-y text-sm">
-            <!-- Завантажується динамічно -->
+            <!-- Динамічно -->
           </tbody>
         </table>
       </div>
@@ -129,13 +135,12 @@
         document.getElementById('status-input').value = settings.status_text;
       }
 
-      // Завантаження товарів
       const { data: products } = await _supabase.from('products').select('*').order('id', { ascending: false });
       const tbody = document.getElementById('products-list');
       tbody.innerHTML = '';
 
       if (!products || products.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-400">Товари відсутні</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-400">Товари відсутні</td></tr>`;
       } else {
         const customCategories = new Set(['ОВОЧІ', 'ФРУКТИ', 'ЗЕЛЕНЬ', 'ЯГОДИ', 'ІНШЕ']);
         products.forEach(p => { if (p.category) customCategories.add(p.category.toUpperCase()); });
@@ -151,7 +156,7 @@
         });
         const newOption = document.createElement('option');
         newOption.value = '__NEW__';
-        newOption.innerText = '➕ Створити нову категорію...';
+        newOption.innerText = '➕ Створити нову...';
         selectEl.appendChild(newOption);
         selectEl.value = currentValue !== '__NEW__' && customCategories.has(currentValue) ? currentValue : Array.from(customCategories)[0];
 
@@ -169,7 +174,10 @@
               </div>
             </td>
             <td class="py-3">
-              <input type="number" value="${p.price}" onchange="updatePrice(${p.id}, this.value)" class="w-20 border px-2 py-1 rounded text-sm font-semibold">
+              <input type="number" value="${p.price}" onchange="updatePrice(${p.id}, 'price', this.value)" class="w-20 border px-2 py-1 rounded text-sm font-semibold">
+            </td>
+            <td class="py-3">
+              <input type="number" value="${p.b2b_price || ''}" placeholder="—" onchange="updatePrice(${p.id}, 'b2b_price', this.value)" class="w-20 border border-emerald-300 bg-emerald-50/20 px-2 py-1 rounded text-sm font-semibold text-emerald-800">
             </td>
             <td class="py-3 text-center">
               <button onclick="toggleAvailability(${p.id}, ${p.is_available})" class="px-3 py-1 rounded-full text-xs font-bold ${p.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
@@ -184,7 +192,6 @@
         });
       }
 
-      // Завантаження бази клієнтів
       const { data: clients } = await _supabase.from('clients').select('*').order('last_order_at', { ascending: false });
       const clientsTbody = document.getElementById('clients-list');
       clientsTbody.innerHTML = '';
@@ -198,7 +205,7 @@
           tr.innerHTML = `
             <td class="py-3 font-semibold text-gray-800">${c.name}</td>
             <td class="py-3 text-emerald-600 font-medium">${c.contact}</td>
-            <td class="py-3 text-gray-600">${c.address || '-'}</td>
+            <td class="py-3 text-gray-600 truncate max-w-xs">${c.address || '-'}</td>
             <td class="py-3 text-right text-xs text-gray-400">${dateStr}</td>
           `;
           clientsTbody.appendChild(tr);
@@ -224,8 +231,9 @@
       alert('Статус оновлено!');
     }
 
-    async function updatePrice(id, newPrice) {
-      await _supabase.from('products').update({ price: parseFloat(newPrice) }).eq('id', id);
+    async function updatePrice(id, field, val) {
+      const value = val === '' ? null : parseFloat(val);
+      await _supabase.from('products').update({ [field]: value }).eq('id', id);
     }
 
     async function toggleAvailability(id, currentStatus) {
@@ -272,18 +280,19 @@
       if (!category) category = 'ІНШЕ';
 
       const price = parseFloat(document.getElementById('new-price').value);
+      const b2bRaw = document.getElementById('new-b2b-price').value;
+      const b2b_price = b2bRaw ? parseFloat(b2bRaw) : null;
       const unit = document.getElementById('new-unit').value;
       
       const fileInput = document.getElementById('new-image-file');
       const urlInput = document.getElementById('new-image-url').value.trim();
 
       let image_url = urlInput || null;
-
       if (fileInput.files && fileInput.files[0]) {
         image_url = await compressImage(fileInput.files[0]);
       }
 
-      await _supabase.from('products').insert([{ title, category, price, unit, image_url, is_available: true }]);
+      await _supabase.from('products').insert([{ title, category, price, b2b_price, unit, image_url, is_available: true }]);
       
       document.getElementById('add-product-form').reset();
       document.getElementById('new-category-custom').classList.add('hidden');
