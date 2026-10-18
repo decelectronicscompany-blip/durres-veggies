@@ -83,33 +83,58 @@
     let cart = {};
 
     async function initCatalog() {
-      const { data: settings } = await _supabase.from('settings').select('*').single();
-      if (settings) {
-        document.getElementById('status-banner').innerText = settings.status_text;
+      try {
+        const { data: settings, error: sErr } = await _supabase.from('settings').select('*').single();
+        if (settings && settings.status_text) {
+          document.getElementById('status-banner').innerText = settings.status_text;
+        } else {
+          document.getElementById('status-banner').innerText = 'Замовлення приймаються щодня';
+        }
+
+        const { data: products, error: pErr } = await _supabase.from('products').select('*').order('id', { ascending: true });
+        const container = document.getElementById('products-container');
+        container.innerHTML = '';
+
+        if (pErr) {
+          console.error('Supabase Error:', pErr);
+          container.innerHTML = `<p class="text-center text-red-500 py-8">Помилка підключення до бази даних. Перевірте ключі в Supabase.</p>`;
+          return;
+        }
+
+        if (!products || products.length === 0) {
+          container.innerHTML = '<p class="text-center text-gray-500 py-8">Наразі немає доступних товарів.</p>';
+          return;
+        }
+
+        let availableCount = 0;
+        products.forEach(p => {
+          if (!p.is_available) return;
+          availableCount++;
+
+          const card = document.createElement('div');
+          card.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center";
+          card.innerHTML = `
+            <div>
+              <h3 class="font-bold text-gray-800">${p.title}</h3>
+              <p class="text-sm font-semibold text-emerald-600">${p.price} Лек <span class="text-xs text-gray-400 font-normal">/ ${p.unit}</span></p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button type="button" onclick="changeQty(${p.id}, '${p.title}', ${p.price}, '${p.unit}', -1)" class="w-8 h-8 rounded-lg bg-gray-100 font-bold text-gray-600 hover:bg-gray-200">-</button>
+              <span id="qty-${p.id}" class="font-bold text-sm min-w-[20px] text-center">${cart[p.id] ? cart[p.id].qty : 0}</span>
+              <button type="button" onclick="changeQty(${p.id}, '${p.title}', ${p.price}, '${p.unit}', 1)" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold hover:bg-emerald-200">+</button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        if (availableCount === 0) {
+          container.innerHTML = '<p class="text-center text-gray-500 py-8">Всі товари тимчасово недоступні.</p>';
+        }
+
+      } catch (err) {
+        console.error('Init error:', err);
+        document.getElementById('products-container').innerHTML = `<p class="text-center text-red-500 py-8">Помилка завантаження даних.</p>`;
       }
-
-      const { data: products } = await _supabase.from('products').select('*').order('id', { ascending: true });
-      const container = document.getElementById('products-container');
-      container.innerHTML = '';
-
-      products.forEach(p => {
-        if (!p.is_available) return;
-
-        const card = document.createElement('div');
-        card.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center";
-        card.innerHTML = `
-          <div>
-            <h3 class="font-bold text-gray-800">${p.title}</h3>
-            <p class="text-sm font-semibold text-emerald-600">${p.price} Лек <span class="text-xs text-gray-400 font-normal">/ ${p.unit}</span></p>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button onclick="changeQty(${p.id}, '${p.title}', ${p.price}, '${p.unit}', -1)" class="w-8 h-8 rounded-lg bg-gray-100 font-bold text-gray-600 hover:bg-gray-200">-</button>
-            <span id="qty-${p.id}" class="font-bold text-sm min-w-[20px] text-center">0</span>
-            <button onclick="changeQty(${p.id}, '${p.title}', ${p.price}, '${p.unit}', 1)" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold hover:bg-emerald-200">+</button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
     }
 
     function changeQty(id, title, price, unit, change) {
@@ -121,7 +146,10 @@
         delete cart[id];
       }
 
-      document.getElementById(`qty-${id}`).innerText = cart[id] ? cart[id].qty : 0;
+      const qtyEl = document.getElementById(`qty-${id}`);
+      if (qtyEl) {
+        qtyEl.innerText = cart[id] ? cart[id].qty : 0;
+      }
       updateCartUI();
     }
 
@@ -203,11 +231,11 @@
           initCatalog();
           updateCartUI();
         } else {
-          alert('Помилка надсилання: ' + (resData.description || 'Невідома помилка'));
+          alert('Помилка надсилання у Telegram: ' + (resData.description || 'Перевірте токен та chat_id'));
         }
       } catch (err) {
         console.error('Помилка відправки в Telegram:', err);
-        alert('Помилка з'єднання з Telegram API. Перевірте підключення.');
+        alert('Помилка зєднання з мережею.');
       } finally {
         btn.disabled = false;
         btn.innerText = 'Надіслати замовлення';
