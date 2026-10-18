@@ -14,48 +14,69 @@
   <meta name="apple-mobile-web-app-title" content="Дуррес Овочі">
   <link rel="apple-touch-icon" href="icon.svg">
 </head>
-<body class="bg-gray-50 pb-28 font-sans text-gray-800">
+<body class="bg-gray-50 pb-36 font-sans text-gray-800">
 
   <!-- Шапка -->
-  <header class="bg-emerald-600 text-white p-4 sticky top-0 z-10 shadow-md">
+  <header class="bg-emerald-600 text-white p-4 sticky top-0 z-20 shadow-md">
     <div class="max-w-md mx-auto flex justify-between items-center">
       <div>
-        <h1 class="text-xl font-bold">🥑 Фрукти & Овочі Дуррес</h1>
+        <h1 class="text-xl font-bold" id="txt-header-title">🥑 Фрукти & Овочі Дуррес</h1>
         <p id="status-banner" class="text-xs bg-emerald-700/60 mt-1 p-1.5 rounded-lg text-emerald-100 font-medium inline-block">
-          Завантаження статусу...
+          ...
         </p>
       </div>
     </div>
   </header>
 
-  <!-- Баннер додавання на екран -->
+  <!-- Кнопка додавання на екран -->
   <div id="install-banner" class="max-w-md mx-auto m-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between hidden">
     <div class="flex items-center space-x-3">
       <span class="text-2xl">📲</span>
       <div>
-        <p class="text-xs font-bold text-emerald-900">Додати на екран телефону</p>
-        <p class="text-[11px] text-emerald-700">Для швидкого та зручного замовлення</p>
+        <p class="text-xs font-bold text-emerald-900" id="txt-pwa-title">Додати на екран телефону</p>
+        <p class="text-[11px] text-emerald-700" id="txt-pwa-sub">Для швидкого та зручного замовлення</p>
       </div>
     </div>
-    <button onclick="installApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg shadow-sm whitespace-nowrap">
+    <button onclick="installApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg shadow-sm whitespace-nowrap" id="txt-pwa-btn">
       Додати на екран
     </button>
   </div>
 
+  <!-- Швидка навігація по категоріях -->
+  <div id="category-nav" class="max-w-md mx-auto px-4 pt-2 overflow-x-auto whitespace-nowrap flex gap-2 no-scrollbar">
+    <!-- Генерується динамічно -->
+  </div>
+
   <!-- Каталог для покупців -->
   <main class="max-w-md mx-auto p-4 space-y-6" id="products-container">
-    <p class="text-center text-gray-400 py-8">Завантаження свіжих продуктів...</p>
+    <p class="text-center text-gray-400 py-8" id="txt-loading">Завантаження свіжих продуктів...</p>
   </main>
+
+  <!-- Плаваюча кнопка швидкого зв'язку -->
+  <a href="https://t.me/durres_veggies" target="_blank" class="fixed bottom-24 right-4 bg-emerald-500 text-white p-3.5 rounded-full shadow-lg z-30 hover:bg-emerald-600 transition flex items-center justify-center">
+    💬
+  </a>
+
+  <!-- Перемикач мов у футері -->
+  <footer class="max-w-md mx-auto px-4 py-6 border-t mt-8 text-center space-y-2 text-xs text-gray-500">
+    <p class="font-semibold text-gray-600" id="txt-lang-title">Мова / Language / Gjuha:</p>
+    <div class="flex justify-center gap-4 font-medium">
+      <button onclick="changeLanguage('uk')" id="lang-btn-uk" class="hover:text-emerald-600">Українська</button>
+      <button onclick="changeLanguage('en')" id="lang-btn-en" class="hover:text-emerald-600">English</button>
+      <button onclick="changeLanguage('sq')" id="lang-btn-sq" class="hover:text-emerald-600">Shqip</button>
+      <button onclick="changeLanguage('ru')" id="lang-btn-ru" class="hover:text-emerald-600">Русский</button>
+    </div>
+  </footer>
 
   <!-- Нижній кошик -->
   <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg hidden z-20">
     <div class="max-w-md mx-auto flex justify-between items-center">
       <div>
-        <p id="delivery-status" class="text-xs font-semibold text-emerald-600">🚚 Безкоштовна доставка від 2500 Лек</p>
-        <p class="text-lg font-bold text-gray-800">Сума: <span id="cart-total" class="text-emerald-600">0</span> Лек</p>
+        <p id="delivery-status" class="text-xs font-semibold text-emerald-600">🚚 ...</p>
+        <p class="text-lg font-bold text-gray-800"><span id="txt-total-label">Сума:</span> <span id="cart-total" class="text-emerald-600">0</span> Лек</p>
       </div>
       <button onclick="openCheckoutModal()" class="bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-xl shadow-md hover:bg-emerald-700">
-        Кошик (<span id="cart-count">0</span>)
+        <span id="txt-cart-btn">Кошик</span> (<span id="cart-count">0</span>)
       </button>
     </div>
   </div>
@@ -64,7 +85,7 @@
   <div id="checkout-modal" class="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center hidden">
     <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
-        <h2 class="text-lg font-bold">Ваше замовлення</h2>
+        <h2 class="text-lg font-bold" id="txt-modal-title">Ваше замовлення</h2>
         <button onclick="closeCheckoutModal()" class="text-gray-400 text-xl font-bold">&times;</button>
       </div>
 
@@ -74,20 +95,29 @@
 
       <form onsubmit="sendOrder(event)" class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Ваше ім'я</label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-name">Ваше ім'я</label>
           <input id="client-name" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Олена">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Телефон або Telegram/WhatsApp</label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-contact">Телефон або Telegram/WhatsApp</label>
           <input id="client-contact" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="+380... або @username">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Адреса доставки в Дурресі</label>
-          <input id="client-address" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Район, вулиця, номер будинку/апартаментів">
+          <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-address">Адреса доставки в Дурресі</label>
+          <input id="client-address" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Район, вулиця, номер будинку">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Коментар (за бажанням)</label>
-          <textarea id="client-comment" class="w-full border p-2 rounded-lg text-sm" rows="2" placeholder="Наприклад: зеленіші банани, підняти на 3 поверх"></textarea>
+          <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-time">Бажаний час доставки</label>
+          <select id="delivery-time" class="w-full border p-2 rounded-lg text-sm bg-white">
+            <option value="Якомога швидше" id="opt-time-asap">⚡ Якомога швидше</option>
+            <option value="12:00 - 15:00" id="opt-time-1">☀️ 12:00 - 15:00</option>
+            <option value="15:00 - 18:00" id="opt-time-2">⛅ 15:00 - 18:00</option>
+            <option value="18:00 - 21:00" id="opt-time-3">🌙 18:00 - 21:00</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-comment">Коментар (за бажанням)</label>
+          <textarea id="client-comment" class="w-full border p-2 rounded-lg text-sm" rows="2" placeholder=""></textarea>
         </div>
 
         <button id="submit-btn" type="submit" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700">
@@ -105,18 +135,212 @@
     const TELEGRAM_BOT_TOKEN = '8538982296:AAHlJGl53crEUA2ypj8Tp-L5_8xyeiPTJUs';
     const TELEGRAM_CHAT_ID = '8487483803';
 
+    let currentLang = localStorage.getItem('app_lang') || 'uk';
+
+    const translations = {
+      uk: {
+        headerTitle: "🥑 Фрукти & Овочі Дуррес",
+        pwaTitle: "Додати на екран телефону",
+        pwaSub: "Для швидкого та зручного замовлення",
+        pwaBtn: "Додати на екран",
+        loading: "Завантаження свіжих продуктів...",
+        totalLabel: "Сума:",
+        cartBtn: "Кошик",
+        modalTitle: "Ваше замовлення",
+        lblName: "Ваше ім'я",
+        lblContact: "Телефон або Telegram/WhatsApp",
+        lblAddress: "Адреса доставки в Дурресі",
+        lblTime: "Бажаний час доставки",
+        lblComment: "Коментар (за бажанням)",
+        commentPlaceholder: "Наприклад: зеленіші банани, підняти на 3 поверх",
+        submitBtn: "Надіслати замовлення",
+        sendingBtn: "Надсилання...",
+        freeDelivery: "🎉 У вас безкоштовна доставка!",
+        deliveryDiff: "🚚 До безкоштовної доставки: ще {diff} Лек",
+        modalFreeNotice: "🎉 Сума замовлення дозволяє отримати <b>безкоштовну доставку</b>!",
+        modalDiffNotice: "💡 Додайте товарів ще на <b>{diff} Лек</b> для безкоштовної доставки (від 2500 Лек).",
+        photoBtn: "📷 Фото",
+        noProducts: "Наразі немає доступних товарів.",
+        allDisabled: "Всі товари тимчасово вимкнені.",
+        successAlert: "Дякуємо! Ваше замовлення прийнято в обробку.",
+        timeAsap: "⚡ Якомога швидше",
+        time1: "☀️ 12:00 - 15:00",
+        time2: "⛅ 15:00 - 18:00",
+        time3: "🌙 18:00 - 21:00"
+      },
+      en: {
+        headerTitle: "🥑 Fruits & Veggies Durrës",
+        pwaTitle: "Add to Home Screen",
+        pwaSub: "For fast and easy ordering",
+        pwaBtn: "Add to Screen",
+        loading: "Loading fresh products...",
+        totalLabel: "Total:",
+        cartBtn: "Cart",
+        modalTitle: "Your Order",
+        lblName: "Your Name",
+        lblContact: "Phone or Telegram/WhatsApp",
+        lblAddress: "Delivery Address in Durrës",
+        lblTime: "Preferred Delivery Time",
+        lblComment: "Comment (optional)",
+        commentPlaceholder: "e.g., greener bananas, 3rd floor",
+        submitBtn: "Send Order",
+        sendingBtn: "Sending...",
+        freeDelivery: "🎉 You have free delivery!",
+        deliveryDiff: "🚚 Add {diff} Lek more for free delivery",
+        modalFreeNotice: "🎉 Your order qualifies for <b>free delivery</b>!",
+        modalDiffNotice: "💡 Add <b>{diff} Lek</b> more of items for free delivery (from 2500 Lek).",
+        photoBtn: "📷 Photo",
+        noProducts: "No products available currently.",
+        allDisabled: "All products are temporarily disabled.",
+        successAlert: "Thank you! Your order has been placed.",
+        timeAsap: "⚡ As soon as possible",
+        time1: "☀️ 12:00 - 15:00",
+        time2: "⛅ 15:00 - 18:00",
+        time3: "🌙 18:00 - 21:00"
+      },
+      sq: {
+        headerTitle: "🥑 Pemë & Perime Durrës",
+        pwaTitle: "Shto në ekranin bazë",
+        pwaSub: "Për porosi të shpejta dhe të lehta",
+        pwaBtn: "Shto në ekran",
+        loading: "Po ngarkohen produktet e freskëta...",
+        totalLabel: "TotaI:",
+        cartBtn: "Shporta",
+        modalTitle: "Porosia juaj",
+        lblName: "Emri juaj",
+        lblContact: "Telefon ose Telegram/WhatsApp",
+        lblAddress: "Adresa e dorëzimit në Durrës",
+        lblTime: "Koha e preferuar e dorëzimit",
+        lblComment: "Koment (opsionale)",
+        commentPlaceholder: "p.sh. banane më të gjelbra, kati 3",
+        submitBtn: "Dërgo porosinë",
+        sendingBtn: "Po dërgohet...",
+        freeDelivery: "🎉 Ju keni dërgesë falas!",
+        deliveryDiff: "🚚 Shto edhe {diff} Lek për dërgesë falas",
+        modalFreeNotice: "🎉 Porosia juaj kualifikohet për <b>dërgesë falas</b>!",
+        modalDiffNotice: "💡 Shto edhe <b>{diff} Lek</b> produkte për dërgesë falas (nga 2500 Lek).",
+        photoBtn: "📷 Foto",
+        noProducts: "Nuk ka produkte në dispozicion për momentin.",
+        allDisabled: "Të gjitha produktet janë përkohësisht të çaktivizuara.",
+        successAlert: "Faleminderit! Porosia juaj u pranua.",
+        timeAsap: "⚡ Sa më shpejt të jetë e mundur",
+        time1: "☀️ 12:00 - 15:00",
+        time2: "⛅ 15:00 - 18:00",
+        time3: "🌙 18:00 - 21:00"
+      },
+      ru: {
+        headerTitle: "🥑 Фрукты & Овощи Дуррес",
+        pwaTitle: "Добавить на экран телефона",
+        pwaSub: "Для быстрого и удобного заказа",
+        pwaBtn: "Добавить на экран",
+        loading: "Загрузка свежих продуктов...",
+        totalLabel: "Сумма:",
+        cartBtn: "Корзина",
+        modalTitle: "Ваш заказ",
+        lblName: "Ваше имя",
+        lblContact: "Телефон или Telegram/WhatsApp",
+        lblAddress: "Адрес доставки в Дурресе",
+        lblTime: "Желаемое время доставки",
+        lblComment: "Комментарий (по желанию)",
+        commentPlaceholder: "Например: более зеленые бананы, 3 этаж",
+        submitBtn: "Отправить заказ",
+        sendingBtn: "Отправка...",
+        freeDelivery: "🎉 У вас бесплатная доставка!",
+        deliveryDiff: "🚚 До бесплатной доставки: еще {diff} Лек",
+        modalFreeNotice: "🎉 Сумма заказа позволяет получить <b>бесплатную доставку</b>!",
+        modalDiffNotice: "💡 Добавьте товаров еще на <b>{diff} Лек</b> для бесплатной доставки (от 2500 Лек).",
+        photoBtn: "📷 Фото",
+        noProducts: "В настоящее время нет доступных товаров.",
+        allDisabled: "Все товары временно отключены.",
+        successAlert: "Спасибо! Ваш заказ принят в обработку.",
+        timeAsap: "⚡ Как можно скорее",
+        time1: "☀️ 12:00 - 15:00",
+        time2: "⛅ 15:00 - 18:00",
+        time3: "🌙 18:00 - 21:00"
+      }
+    };
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('app_lang', lang);
+      const t = translations[lang];
+
+      document.getElementById('txt-header-title').innerText = t.headerTitle;
+      document.getElementById('txt-pwa-title').innerText = t.pwaTitle;
+      document.getElementById('txt-pwa-sub').innerText = t.pwaSub;
+      document.getElementById('txt-pwa-btn').innerText = t.pwaBtn;
+      document.getElementById('txt-loading').innerText = t.loading;
+      document.getElementById('txt-total-label').innerText = t.totalLabel;
+      document.getElementById('txt-cart-btn').innerText = t.cartBtn;
+      document.getElementById('txt-modal-title').innerText = t.modalTitle;
+      document.getElementById('lbl-name').innerText = t.lblName;
+      document.getElementById('lbl-contact').innerText = t.lblContact;
+      document.getElementById('lbl-address').innerText = t.lblAddress;
+      document.getElementById('lbl-time').innerText = t.lblTime;
+      document.getElementById('lbl-comment').innerText = t.lblComment;
+      document.getElementById('client-comment').placeholder = t.commentPlaceholder;
+      document.getElementById('submit-btn').innerText = t.submitBtn;
+
+      document.getElementById('opt-time-asap').innerText = t.timeAsap;
+      document.getElementById('opt-time-1').innerText = t.time1;
+      document.getElementById('opt-time-2').innerText = t.time2;
+      document.getElementById('opt-time-3').innerText = t.time3;
+
+      // Підсвітка активної мови в футері
+      ['uk', 'en', 'sq', 'ru'].forEach(l => {
+        const btn = document.getElementById(`lang-btn-${l}`);
+        if (l === lang) {
+          btn.className = "font-bold text-emerald-600 underline";
+        } else {
+          btn.className = "hover:text-emerald-600 text-gray-500";
+        }
+      });
+
+      if (productsCache.length > 0) {
+        renderCatalog(productsCache);
+        updateCartUI();
+      }
+    }
+
+    function changeLanguage(lang) {
+      applyLanguage(lang);
+    }
+
     let cart = {};
     let productsCache = [];
     let deferredPrompt = null;
 
-    // Обробка події додавання на екран
+    function loadSavedUserData() {
+      const savedName = localStorage.getItem('client_name');
+      const savedContact = localStorage.getItem('client_contact');
+      const savedAddress = localStorage.getItem('client_address');
+
+      if (savedName) document.getElementById('client-name').value = savedName;
+      if (savedContact) document.getElementById('client-contact').value = savedContact;
+      if (savedAddress) document.getElementById('client-address').value = savedAddress;
+    }
+
+    async function saveClientToDatabase(name, contact, address) {
+      localStorage.setItem('client_name', name);
+      localStorage.setItem('client_contact', contact);
+      localStorage.setItem('client_address', address);
+
+      try {
+        await _supabase.from('clients').upsert(
+          { name, contact, address, last_order_at: new Date() },
+          { onConflict: 'contact' }
+        );
+      } catch (e) {
+        console.error('Client save error:', e);
+      }
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
       document.getElementById('install-banner').classList.remove('hidden');
     });
 
-    // Підказка для iOS Safari
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     
@@ -133,14 +357,17 @@
         }
         deferredPrompt = null;
       } else if (isIOS) {
-        alert('Щоб додати сайт на екран iPhone:\n1. Натисніть кнопку "Поділитися" внизу екрана Safari ⎋\n2. Виберіть "На початковий екран" ➕');
+        alert('Safari -> "Share" ⎋ -> "Add to Home Screen" ➕');
       } else {
-        alert('Щоб додати сайт на екран, відкрийте меню браузера (⋮) та натисніть "Додати на головний екран".');
+        alert('Menu (⋮) -> "Add to Home Screen"');
       }
     }
 
     async function initCatalog() {
       try {
+        loadSavedUserData();
+        applyLanguage(currentLang);
+
         const { data: settings } = await _supabase.from('settings').select('*').single();
         if (settings && settings.status_text) {
           document.getElementById('status-banner').innerText = settings.status_text;
@@ -148,10 +375,9 @@
 
         const { data: products } = await _supabase.from('products').select('*').order('id', { ascending: true });
         const container = document.getElementById('products-container');
-        container.innerHTML = '';
 
         if (!products || products.length === 0) {
-          container.innerHTML = '<p class="text-center text-gray-500 py-8">Наразі немає доступних товарів.</p>';
+          container.innerHTML = `<p class="text-center text-gray-500 py-8">${translations[currentLang].noProducts}</p>`;
           return;
         }
 
@@ -165,7 +391,10 @@
 
     function renderCatalog(products) {
       const container = document.getElementById('products-container');
+      const navContainer = document.getElementById('category-nav');
+      const t = translations[currentLang];
       container.innerHTML = '';
+      navContainer.innerHTML = '';
 
       const groups = {};
       products.forEach(p => {
@@ -176,13 +405,23 @@
       });
 
       if (Object.keys(groups).length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 py-8">Всі товари тимчасово вимкнені.</p>';
+        container.innerHTML = `<p class="text-center text-gray-500 py-8">${t.allDisabled}</p>`;
         return;
       }
 
       for (const category in groups) {
+        const catBtn = document.createElement('button');
+        catBtn.className = "bg-white text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-200 shadow-sm hover:bg-emerald-50 transition";
+        catBtn.innerText = category;
+        catBtn.onclick = () => {
+          const el = document.getElementById(`cat-section-${category}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+        navContainer.appendChild(catBtn);
+
         const section = document.createElement('div');
-        section.className = "space-y-2";
+        section.id = `cat-section-${category}`;
+        section.className = "space-y-2 pt-2";
         section.innerHTML = `<h2 class="text-sm font-bold text-emerald-700 uppercase tracking-wider px-1">${category}</h2>`;
         
         const itemsWrapper = document.createElement('div');
@@ -196,7 +435,7 @@
           let photoContainerHtml = '';
           
           if (p.image_url) {
-            photoButtonHtml = `<button onclick="togglePhoto(${p.id})" class="text-xs text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded font-medium transition">📷 Фото</button>`;
+            photoButtonHtml = `<button onclick="togglePhoto(${p.id})" class="text-xs text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded font-medium transition">${t.photoBtn}</button>`;
             photoContainerHtml = `<div id="photo-${p.id}" class="hidden mt-2 pt-2 border-t"><img src="${p.image_url}" alt="${p.title}" class="w-full h-40 object-cover rounded-lg shadow-inner"></div>`;
           }
 
@@ -246,6 +485,7 @@
     }
 
     function updateCartUI() {
+      const t = translations[currentLang];
       let total = 0;
       let count = 0;
       for (const id in cart) {
@@ -258,10 +498,10 @@
 
       const deliveryStatus = document.getElementById('delivery-status');
       if (total >= 2500) {
-        deliveryStatus.innerHTML = "🎉 У вас безкоштовна доставка!";
+        deliveryStatus.innerHTML = t.freeDelivery;
       } else {
         const diff = 2500 - total;
-        deliveryStatus.innerHTML = `🚚 До безкоштовної доставки: ще ${diff} Лек`;
+        deliveryStatus.innerHTML = t.deliveryDiff.replace('{diff}', diff);
       }
 
       const cartBar = document.getElementById('cart-bar');
@@ -270,6 +510,7 @@
     }
 
     function openCheckoutModal() {
+      const t = translations[currentLang];
       const list = document.getElementById('cart-items-list');
       list.innerHTML = '';
       let total = 0;
@@ -283,10 +524,10 @@
 
       const modalNotice = document.getElementById('modal-delivery-notice');
       if (total >= 2500) {
-        modalNotice.innerHTML = "🎉 Сума замовлення дозволяє отримати <b>безкоштовну доставку</b>!";
+        modalNotice.innerHTML = t.modalFreeNotice;
       } else {
         const diff = 2500 - total;
-        modalNotice.innerHTML = `💡 Додайте товарів ще на <b>${diff} Лек</b> для безкоштовної доставки (від 2500 Лек).`;
+        modalNotice.innerHTML = t.modalDiffNotice.replace('{diff}', diff);
       }
 
       document.getElementById('checkout-modal').classList.remove('hidden');
@@ -298,20 +539,25 @@
 
     async function sendOrder(e) {
       e.preventDefault();
+      const t = translations[currentLang];
       
       const btn = document.getElementById('submit-btn');
       btn.disabled = true;
-      btn.innerText = 'Надсилання...';
+      btn.innerText = t.sendingBtn;
 
       const name = document.getElementById('client-name').value;
       const contact = document.getElementById('client-contact').value;
       const address = document.getElementById('client-address').value;
+      const deliveryTime = document.getElementById('delivery-time').value;
       const comment = document.getElementById('client-comment').value;
 
-      let orderText = `🛒 Нове замовлення у Дурресі!\n\n`;
+      await saveClientToDatabase(name, contact, address);
+
+      let orderText = `🛒 Нове замовлення у Дурресі! (Мова: ${currentLang.toUpperCase()})\n\n`;
       orderText += `👤 Ім'я: ${name}\n`;
       orderText += `📞 Контакт: ${contact}\n`;
       orderText += `📍 Адреса: ${address}\n`;
+      orderText += `⏰ Час доставки: ${deliveryTime}\n`;
       if (comment) orderText += `💬 Коментар: ${comment}\n\n`;
       orderText += `📦 Товари у кошику:\n`;
 
@@ -342,19 +588,19 @@
         const resData = await response.json();
 
         if (resData.ok) {
-          alert('Дякуємо! Ваше замовлення прийнято в обробку.');
+          alert(t.successAlert);
           closeCheckoutModal();
           cart = {};
           renderCatalog(productsCache);
           updateCartUI();
         } else {
-          alert('Помилка надсилання: ' + (resData.description || 'Перевірте бота'));
+          alert('Error: ' + (resData.description || 'Bot error'));
         }
       } catch (err) {
-        alert("Помилка з'єднання.");
+        alert("Connection error.");
       } finally {
         btn.disabled = false;
-        btn.innerText = 'Надіслати замовлення';
+        btn.innerText = t.submitBtn;
       }
     }
 
