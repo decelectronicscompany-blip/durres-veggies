@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-50 pb-24 font-sans text-gray-800">
+<body class="bg-gray-50 pb-28 font-sans text-gray-800">
 
   <!-- Шапка -->
   <header class="bg-emerald-600 text-white p-4 sticky top-0 z-10 shadow-md">
@@ -19,20 +19,20 @@
     </div>
   </header>
 
-  <!-- Каталог -->
-  <main class="max-w-md mx-auto p-4 space-y-3" id="products-container">
+  <!-- Каталог (групується автоматично) -->
+  <main class="max-w-md mx-auto p-4 space-y-6" id="products-container">
     <p class="text-center text-gray-400 py-8">Завантаження свіжих продуктів...</p>
   </main>
 
   <!-- Нижній плаваючий кошик -->
-  <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg hidden">
+  <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg hidden z-20">
     <div class="max-w-md mx-auto flex justify-between items-center">
       <div>
-        <p class="text-xs text-gray-500">Орієнтовна сума:</p>
-        <p class="text-lg font-bold text-emerald-600"><span id="cart-total">0</span> Лек</p>
+        <p id="delivery-status" class="text-xs font-semibold text-emerald-600">🚚 Безкоштовна доставка від 2500 Лек</p>
+        <p class="text-lg font-bold text-gray-800">Сума: <span id="cart-total" class="text-emerald-600">0</span> Лек</p>
       </div>
       <button onclick="openCheckoutModal()" class="bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-xl shadow-md hover:bg-emerald-700">
-        Оформити замовлення
+        Кошик (<span id="cart-count">0</span>)
       </button>
     </div>
   </div>
@@ -42,10 +42,12 @@
     <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
         <h2 class="text-lg font-bold">Ваше замовлення</h2>
-        <button onclick="closeCheckoutModal()" class="text-gray-400 text-xl">&times;</button>
+        <button onclick="closeCheckoutModal()" class="text-gray-400 text-xl font-bold">&times;</button>
       </div>
 
       <div id="cart-items-list" class="space-y-2 text-sm max-h-40 overflow-y-auto border-b pb-2"></div>
+
+      <div id="modal-delivery-notice" class="text-xs bg-emerald-50 text-emerald-800 p-2.5 rounded-lg font-medium"></div>
 
       <form onsubmit="sendOrder(event)" class="space-y-3">
         <div>
@@ -81,65 +83,112 @@
     const TELEGRAM_CHAT_ID = '8487483803';
 
     let cart = {};
+    let productsCache = [];
 
     async function initCatalog() {
       try {
-        const { data: settings, error: sErr } = await _supabase.from('settings').select('*').single();
+        const { data: settings } = await _supabase.from('settings').select('*').single();
         if (settings && settings.status_text) {
           document.getElementById('status-banner').innerText = settings.status_text;
         } else {
           document.getElementById('status-banner').innerText = 'Замовлення приймаються щодня';
         }
 
-        const { data: products, error: pErr } = await _supabase.from('products').select('*').order('id', { ascending: true });
+        const { data: products, error } = await _supabase.from('products').select('*').order('category', { ascending: true });
         const container = document.getElementById('products-container');
         container.innerHTML = '';
 
-        if (pErr) {
-          console.error('Supabase Error:', pErr);
-          container.innerHTML = `<p class="text-center text-red-500 py-8">Помилка підключення до бази даних. Перевірте ключі в Supabase.</p>`;
+        if (error || !products || products.length === 0) {
+          container.innerHTML = '<p class="text-center text-gray-500 py-8">Наразі немає доступних товарів на сьогодні.</p>';
           return;
         }
 
-        if (!products || products.length === 0) {
-          container.innerHTML = '<p class="text-center text-gray-500 py-8">Наразі немає доступних товарів.</p>';
-          return;
-        }
-
-        let availableCount = 0;
-        products.forEach(p => {
-          if (!p.is_available) return;
-          availableCount++;
-
-          const card = document.createElement('div');
-          card.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center";
-          card.innerHTML = `
-            <div>
-              <h3 class="font-bold text-gray-800">${p.title}</h3>
-              <p class="text-sm font-semibold text-emerald-600">${p.price} Лек <span class="text-xs text-gray-400 font-normal">/ ${p.unit}</span></p>
-            </div>
-            <div class="flex items-center space-x-2">
-              <button type="button" onclick="changeQty(${p.id}, '${p.title}', ${p.price}, '${p.unit}', -1)" class="w-8 h-8 rounded-lg bg-gray-100 font-bold text-gray-600 hover:bg-gray-200">-</button>
-              <span id="qty-${p.id}" class="font-bold text-sm min-w-[20px] text-center">${cart[p.id] ? cart[p.id].qty : 0}</span>
-              <button type="button" onclick="changeQty(${p.id}, '${p.title}', ${p.price}, '${p.unit}', 1)" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold hover:bg-emerald-200">+</button>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-
-        if (availableCount === 0) {
-          container.innerHTML = '<p class="text-center text-gray-500 py-8">Всі товари тимчасово недоступні.</p>';
-        }
+        productsCache = products;
+        renderCatalog(products);
 
       } catch (err) {
         console.error('Init error:', err);
-        document.getElementById('products-container').innerHTML = `<p class="text-center text-red-500 py-8">Помилка завантаження даних.</p>`;
+        document.getElementById('products-container').innerHTML = `<p class="text-center text-red-500 py-8">Помилка завантаження каталогу.</p>`;
       }
     }
 
-    function changeQty(id, title, price, unit, change) {
+    function renderCatalog(products) {
+      const container = document.getElementById('products-container');
+      container.innerHTML = '';
+
+      // Групуємо товари за категоріями
+      const groups = {};
+      products.forEach(p => {
+        if (!p.is_available) return;
+        const cat = p.category || 'ОВОЧІ';
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(p);
+      });
+
+      if (Object.keys(groups).length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">Всі товари тимчасово вимкнені.</p>';
+        return;
+      }
+
+      for (const category in groups) {
+        // Секція категорії
+        const section = document.createElement('div');
+        section.className = "space-y-2";
+        section.innerHTML = `<h2 class="text-sm font-bold text-emerald-700 uppercase tracking-wider px-1">${category}</h2>`;
+        
+        const itemsWrapper = document.createElement('div');
+        itemsWrapper.className = "space-y-2";
+
+        groups[category].forEach(p => {
+          const card = document.createElement('div');
+          card.className = "bg-white p-3.5 rounded-xl shadow-sm border flex flex-col justify-between";
+          
+          let photoButtonHtml = '';
+          let photoContainerHtml = '';
+          
+          if (p.image_url) {
+            photoButtonHtml = `<button onclick="togglePhoto(${p.id})" class="text-xs text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded font-medium transition">📷 Фото</button>`;
+            photoContainerHtml = `<div id="photo-${p.id}" class="hidden mt-2 pt-2 border-t"><img src="${p.image_url}" alt="${p.title}" class="w-full h-40 object-cover rounded-lg shadow-inner"></div>`;
+          }
+
+          card.innerHTML = `
+            <div class="flex justify-between items-center">
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-bold text-gray-800 text-sm sm:text-base">${p.title}</h3>
+                  ${photoButtonHtml}
+                </div>
+                <p class="text-sm font-semibold text-emerald-600">${p.price} Лек <span class="text-xs text-gray-400 font-normal">/ ${p.unit}</span></p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button type="button" onclick="changeQty(${p.id}, -1)" class="w-8 h-8 rounded-lg bg-gray-100 font-bold text-gray-600 hover:bg-gray-200">-</button>
+                <span id="qty-${p.id}" class="font-bold text-sm min-w-[20px] text-center">${cart[p.id] ? cart[p.id].qty : 0}</span>
+                <button type="button" onclick="changeQty(${p.id}, 1)" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold hover:bg-emerald-200">+</button>
+              </div>
+            </div>
+            ${photoContainerHtml}
+          `;
+          itemsWrapper.appendChild(card);
+        });
+
+        section.appendChild(itemsWrapper);
+        container.appendChild(section);
+      }
+    }
+
+    function togglePhoto(id) {
+      const el = document.getElementById(`photo-${id}`);
+      if (el) {
+        el.classList.toggle('hidden');
+      }
+    }
+
+    function changeQty(id, change) {
+      const product = productsCache.find(p => p.id === id);
+      if (!product) return;
+
       if (!cart[id]) {
-        cart[id] = { title, price, unit, qty: 0 };
+        cart[id] = { title: product.title, price: product.price, unit: product.unit, qty: 0 };
       }
       cart[id].qty += change;
       if (cart[id].qty <= 0) {
@@ -162,6 +211,16 @@
       }
 
       document.getElementById('cart-total').innerText = total;
+      document.getElementById('cart-count').innerText = count;
+
+      const deliveryStatus = document.getElementById('delivery-status');
+      if (total >= 2500) {
+        deliveryStatus.innerHTML = "🎉 У вас безкоштовна доставка!";
+      } else {
+        const diff = 2500 - total;
+        deliveryStatus.innerHTML = `🚚 До безкоштовної доставки: ще ${diff} Лек`;
+      }
+
       const cartBar = document.getElementById('cart-bar');
       if (count > 0) {
         cartBar.classList.remove('hidden');
@@ -173,10 +232,23 @@
     function openCheckoutModal() {
       const list = document.getElementById('cart-items-list');
       list.innerHTML = '';
+      let total = 0;
+
       for (const id in cart) {
         const item = cart[id];
-        list.innerHTML += `<div class="flex justify-between"><span>${item.title} (${item.qty} ${item.unit})</span> <span class="font-semibold">${item.price * item.qty} Лек</span></div>`;
+        const sum = item.price * item.qty;
+        total += sum;
+        list.innerHTML += `<div class="flex justify-between"><span>${item.title} (${item.qty} ${item.unit})</span> <span class="font-semibold">${sum} Лек</span></div>`;
       }
+
+      const modalNotice = document.getElementById('modal-delivery-notice');
+      if (total >= 2500) {
+        modalNotice.innerHTML = "🎉 Сума замовлення дозволяє отримати <b>безкоштовну доставку</b>!";
+      } else {
+        const diff = 2500 - total;
+        modalNotice.innerHTML = `💡 Додайте товарів ще на <b>${diff} Лек</b> для безкоштовної доставки (від 2500 Лек).`;
+      }
+
       document.getElementById('checkout-modal').classList.remove('hidden');
     }
 
@@ -210,7 +282,12 @@
         total += sum;
         orderText += `• ${item.title}: ${item.qty} ${item.unit} = ${sum} Лек\n`;
       }
-      orderText += `\n💰 Загальна сума: ~${total} Лек`;
+
+      if (total >= 2500) {
+        orderText += `\n💰 Загальна сума: ~${total} Лек (🎉 Безкоштовна доставка)`;
+      } else {
+        orderText += `\n💰 Загальна сума: ~${total} Лек (з урахуванням доставки)`;
+      }
 
       try {
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -228,14 +305,14 @@
           alert('Дякуємо! Ваше замовлення прийнято в обробку. Ми звʼяжемося з вами найближчим часом.');
           closeCheckoutModal();
           cart = {};
-          initCatalog();
+          renderCatalog(productsCache);
           updateCartUI();
         } else {
-          alert('Помилка надсилання у Telegram: ' + (resData.description || 'Перевірте токен та chat_id'));
+          alert('Помилка надсилання: ' + (resData.description || 'Невідома помилка'));
         }
       } catch (err) {
         console.error('Помилка відправки в Telegram:', err);
-        alert('Помилка зєднання з мережею.');
+        alert("Помилка з'єднання з Telegram API.");
       } finally {
         btn.disabled = false;
         btn.innerText = 'Надіслати замовлення';
