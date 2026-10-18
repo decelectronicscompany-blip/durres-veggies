@@ -13,18 +13,20 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Дуррес Овочі">
   <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
 <body class="bg-gray-50 pb-36 font-sans text-gray-800">
 
   <!-- Шапка -->
   <header class="bg-emerald-600 text-white p-4 sticky top-0 z-20 shadow-md">
-    <div class="max-w-md mx-auto flex justify-between items-center">
-      <div>
-        <h1 class="text-xl font-bold" id="txt-header-title">🥑 Фрукти & Овочі Дуррес</h1>
-        <p id="status-banner" class="text-xs bg-emerald-700/60 mt-1 p-1.5 rounded-lg text-emerald-100 font-medium inline-block">
-          ...
-        </p>
-      </div>
+    <div class="max-w-md mx-auto text-center">
+      <h1 class="text-xl font-bold" id="txt-header-title">🥑 Фрукти & Овочі Дуррес</h1>
+      <p id="status-banner" class="text-xs bg-emerald-700/60 mt-1.5 px-3 py-1 rounded-lg text-emerald-100 font-medium inline-block">
+        ...
+      </p>
     </div>
   </header>
 
@@ -42,29 +44,39 @@
     </button>
   </div>
 
-  <!-- Швидка навігація по категоріях -->
-  <div id="category-nav" class="max-w-md mx-auto px-4 pt-2 overflow-x-auto whitespace-nowrap flex gap-2 no-scrollbar">
-    <!-- Генерується динамічно -->
+  <!-- Швидка симетрична навігація по категоріях -->
+  <div class="max-w-md mx-auto px-4 pt-4">
+    <div id="category-nav" class="bg-white p-1.5 rounded-2xl border shadow-sm flex flex-wrap justify-center items-center gap-1.5">
+      <!-- Генерується динамічно та симетрично -->
+    </div>
   </div>
 
   <!-- Каталог для покупців -->
-  <main class="max-w-md mx-auto p-4 space-y-6" id="products-container">
+  <main class="max-w-md mx-auto p-4 space-y-5" id="products-container">
     <p class="text-center text-gray-400 py-8" id="txt-loading">Завантаження свіжих продуктів...</p>
   </main>
 
-  <!-- Плаваюча кнопка швидкого зв'язку -->
-  <a href="https://t.me/durres_veggies" target="_blank" class="fixed bottom-24 right-4 bg-emerald-500 text-white p-3.5 rounded-full shadow-lg z-30 hover:bg-emerald-600 transition flex items-center justify-center">
-    💬
-  </a>
+  <!-- Футер з мовами та аккуратною кнопкою чату у центрі -->
+  <footer class="max-w-md mx-auto px-4 py-6 border-t mt-8 text-center space-y-4 text-xs text-gray-500">
+    <div class="space-y-2">
+      <p class="font-semibold text-gray-600" id="txt-lang-title">Мова / Language / Gjuha:</p>
+      <div class="flex justify-center items-center gap-3 font-medium">
+        <button onclick="changeLanguage('uk')" id="lang-btn-uk" class="px-2 py-1 rounded transition">Українська</button>
+        <span class="text-gray-300">•</span>
+        <button onclick="changeLanguage('en')" id="lang-btn-en" class="px-2 py-1 rounded transition">English</button>
+        <span class="text-gray-300">•</span>
+        <button onclick="changeLanguage('sq')" id="lang-btn-sq" class="px-2 py-1 rounded transition">Shqip</button>
+        <span class="text-gray-300">•</span>
+        <button onclick="changeLanguage('ru')" id="lang-btn-ru" class="px-2 py-1 rounded transition">Русский</button>
+      </div>
+    </div>
 
-  <!-- Перемикач мов у футері -->
-  <footer class="max-w-md mx-auto px-4 py-6 border-t mt-8 text-center space-y-2 text-xs text-gray-500">
-    <p class="font-semibold text-gray-600" id="txt-lang-title">Мова / Language / Gjuha:</p>
-    <div class="flex justify-center gap-4 font-medium">
-      <button onclick="changeLanguage('uk')" id="lang-btn-uk" class="hover:text-emerald-600">Українська</button>
-      <button onclick="changeLanguage('en')" id="lang-btn-en" class="hover:text-emerald-600">English</button>
-      <button onclick="changeLanguage('sq')" id="lang-btn-sq" class="hover:text-emerald-600">Shqip</button>
-      <button onclick="changeLanguage('ru')" id="lang-btn-ru" class="hover:text-emerald-600">Русский</button>
+    <!-- Кнопка зв'язку по центру під мовами -->
+    <div class="pt-2">
+      <a href="https://t.me/durres_veggies" target="_blank" class="inline-flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-100 transition shadow-sm">
+        <span>💬</span>
+        <span id="txt-chat-btn">Написати нам у Telegram</span>
+      </a>
     </div>
   </footer>
 
@@ -137,16 +149,13 @@
 
     let currentLang = localStorage.getItem('app_lang') || 'uk';
 
-    // Словник автоматичного перекладу популярних товарів та категорій
     const productDictionary = {
-      // Категорії
       "ОВОЧІ": { en: "VEGETABLES", sq: "PERIME", ru: "ОВОЩИ" },
       "ФРУКТИ": { en: "FRUITS", sq: "PEMË", ru: "ФРУКТЫ" },
       "ЗЕЛЕНЬ": { en: "HERBS", sq: "ERËZA", ru: "ЗЕЛЕНЬ" },
       "ЯГОДИ": { en: "BERRIES", sq: "FRUTA MALIT", ru: "ЯГОДЫ" },
       "ІНШЕ": { en: "OTHER", sq: "TË TJERA", ru: "ДРУГОЕ" },
 
-      // Популярні позиції
       "Помідори рожеві": { en: "Pink Tomatoes", sq: "Domate rozë", ru: "Помидоры розовые" },
       "Огірки місцеві": { en: "Local Cucumbers", sq: "Kastravecë vendi", ru: "Огурцы местные" },
       "Картопля молода": { en: "Young Potatoes", sq: "Patate të reja", ru: "Картофель молодой" },
@@ -166,7 +175,6 @@
       "Авокадо": { en: "Avocado", sq: "Avokado", ru: "Авокадо" }
     };
 
-    // Функція отримати перекладений текст (якщо немає у словнику, залишає оригінал)
     function getTranslatedTerm(text) {
       if (currentLang === 'uk' || !text) return text;
       const entry = productDictionary[text];
@@ -202,6 +210,7 @@
         noProducts: "Наразі немає доступних товарів.",
         allDisabled: "Всі товари тимчасово вимкнені.",
         successAlert: "Дякуємо! Ваше замовлення прийнято в обробку.",
+        chatBtn: "Написати нам у Telegram",
         timeAsap: "⚡ Якомога швидше",
         time1: "☀️ 12:00 - 15:00",
         time2: "⛅ 15:00 - 18:00",
@@ -232,6 +241,7 @@
         noProducts: "No products available currently.",
         allDisabled: "All products are temporarily disabled.",
         successAlert: "Thank you! Your order has been placed.",
+        chatBtn: "Contact us on Telegram",
         timeAsap: "⚡ As soon as possible",
         time1: "☀️ 12:00 - 15:00",
         time2: "⛅ 15:00 - 18:00",
@@ -262,6 +272,7 @@
         noProducts: "Nuk ka produkte në dispozicion për momentin.",
         allDisabled: "Të gjitha produktet janë përkohësisht të çaktivizuara.",
         successAlert: "Faleminderit! Porosia juaj u pranua.",
+        chatBtn: "Na shkruani në Telegram",
         timeAsap: "⚡ Sa më shpejt të jetë e mundur",
         time1: "☀️ 12:00 - 15:00",
         time2: "⛅ 15:00 - 18:00",
@@ -292,6 +303,7 @@
         noProducts: "В настоящее время нет доступных товаров.",
         allDisabled: "Все товары временно отключены.",
         successAlert: "Спасибо! Ваш заказ принят в обработку.",
+        chatBtn: "Написать нам в Telegram",
         timeAsap: "⚡ Как можно скорее",
         time1: "☀️ 12:00 - 15:00",
         time2: "⛅ 15:00 - 18:00",
@@ -319,6 +331,7 @@
       document.getElementById('lbl-comment').innerText = t.lblComment;
       document.getElementById('client-comment').placeholder = t.commentPlaceholder;
       document.getElementById('submit-btn').innerText = t.submitBtn;
+      document.getElementById('txt-chat-btn').innerText = t.chatBtn;
 
       document.getElementById('opt-time-asap').innerText = t.timeAsap;
       document.getElementById('opt-time-1').innerText = t.time1;
@@ -328,9 +341,9 @@
       ['uk', 'en', 'sq', 'ru'].forEach(l => {
         const btn = document.getElementById(`lang-btn-${l}`);
         if (l === lang) {
-          btn.className = "font-bold text-emerald-600 underline";
+          btn.className = "px-2 py-1 rounded bg-emerald-600 text-white font-bold shadow-sm";
         } else {
-          btn.className = "hover:text-emerald-600 text-gray-500";
+          btn.className = "px-2 py-1 rounded hover:text-emerald-600 text-gray-500 font-medium";
         }
       });
 
@@ -451,7 +464,7 @@
         const translatedCategory = getTranslatedTerm(category);
 
         const catBtn = document.createElement('button');
-        catBtn.className = "bg-white text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-200 shadow-sm hover:bg-emerald-50 transition";
+        catBtn.className = "bg-emerald-50 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl border border-emerald-200/60 shadow-xs hover:bg-emerald-100 transition";
         catBtn.innerText = translatedCategory;
         catBtn.onclick = () => {
           const el = document.getElementById(`cat-section-${category}`);
@@ -461,8 +474,8 @@
 
         const section = document.createElement('div');
         section.id = `cat-section-${category}`;
-        section.className = "space-y-2 pt-2";
-        section.innerHTML = `<h2 class="text-sm font-bold text-emerald-700 uppercase tracking-wider px-1">${translatedCategory}</h2>`;
+        section.className = "space-y-2 pt-1";
+        section.innerHTML = `<h2 class="text-xs font-bold text-emerald-700 uppercase tracking-wider px-1">${translatedCategory}</h2>`;
         
         const itemsWrapper = document.createElement('div');
         itemsWrapper.className = "space-y-2";
@@ -470,7 +483,7 @@
         groups[category].forEach(p => {
           const translatedTitle = getTranslatedTerm(p.title);
           const card = document.createElement('div');
-          card.className = "bg-white p-3.5 rounded-xl shadow-sm border flex flex-col justify-between";
+          card.className = "bg-white p-3.5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between";
           
           let photoButtonHtml = '';
           let photoContainerHtml = '';
