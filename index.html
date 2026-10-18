@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Адмінка | Доставка Дуррес</title>
+  <title>Адмін-панель | Доставка Дуррес</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -15,48 +15,64 @@
       <a href="index.html" target="_blank" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg font-medium">👀 Відкрити сайт</a>
     </div>
 
-    <!-- Налаштування шапки сайту -->
+    <!-- Блок-статус на сайті -->
     <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
       <h2 class="text-lg font-bold text-gray-700">📌 Блок-статус на сайті</h2>
       <div class="flex flex-col sm:flex-row gap-3">
-        <input id="status-input" type="text" class="flex-1 border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Текст статусу...">
+        <input id="status-input" type="text" class="flex-1 border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Замовлення на сьогодні приймаються до 14:00 🧅">
         <button onclick="updateStatus()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-lg transition">Зберегти</button>
       </div>
     </div>
 
-    <!-- Додавання нового товару з вибором фото з галереї -->
+    <!-- Додавання нового товару -->
     <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
       <h2 class="text-lg font-bold text-gray-700">➕ Додати новий товар</h2>
       <form id="add-product-form" onsubmit="addProduct(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <input id="new-title" type="text" placeholder="Назва (напр. Яблука Гала)" required class="border p-2 rounded-lg">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Назва товару</label>
+          <input id="new-title" type="text" placeholder="Яблука Гала" required class="w-full border p-2 rounded-lg text-sm">
+        </div>
         
-        <select id="new-category" class="border p-2 rounded-lg bg-white">
-          <option value="ОВОЧІ">🍅 Овочі</option>
-          <option value="ФРУКТИ">🍏 Фрукти</option>
-          <option value="ЗЕЛЕНЬ">🌿 Зелень</option>
-          <option value="ЯГОДИ">🍓 Ягоди</option>
-          <option value="ІНШЕ">🛒 Інше</option>
-        </select>
-
-        <input id="new-price" type="number" placeholder="Ціна (Лек)" required class="border p-2 rounded-lg">
-        
-        <select id="new-unit" class="border p-2 rounded-lg bg-white">
-          <option value="кг">кг</option>
-          <option value="шт">шт</option>
-          <option value="пучок">пучок</option>
-          <option value="упаковка">упаковка</option>
-        </select>
-
-        <div class="sm:col-span-2 space-y-1">
-          <label class="block text-xs font-semibold text-gray-600">Фото товару (з галереї або телефону):</label>
-          <input id="new-image-file" type="file" accept="image/*" class="w-full border p-2 rounded-lg text-sm bg-gray-50 file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Категорія</label>
+          <select id="new-category" class="w-full border p-2 rounded-lg text-sm bg-white">
+            <option value="ОВОЧІ">🍅 Овочі</option>
+            <option value="ФРУКТИ">🍏 Фрукти</option>
+            <option value="ЗЕЛЕНЬ">🌿 Зелень</option>
+            <option value="ЯГОДИ">🍓 Ягоди</option>
+            <option value="ІНШЕ">🛒 Інше</option>
+          </select>
         </div>
 
-        <button type="submit" id="submit-btn" class="sm:col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition">Додати товар у каталог</button>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Ціна (Лек)</label>
+          <input id="new-price" type="number" placeholder="180" required class="w-full border p-2 rounded-lg text-sm">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Одиниця виміру</label>
+          <select id="new-unit" class="w-full border p-2 rounded-lg text-sm bg-white">
+            <option value="кг">кг</option>
+            <option value="шт">шт</option>
+            <option value="пучок">пучок</option>
+            <option value="упаковка">упаковка</option>
+          </select>
+        </div>
+
+        <div class="sm:col-span-2 space-y-2 border-t pt-3 mt-1">
+          <label class="block text-xs font-semibold text-gray-600">Завантажити фото товару:</label>
+          <input id="new-image-file" type="file" accept="image/*" class="w-full border p-2 rounded-lg text-sm bg-gray-50 file:mr-4 file:py-1.5 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+          <p class="text-[11px] text-gray-400">Або вкажіть пряме посилання на фото (URL):</p>
+          <input id="new-image-url" type="url" placeholder="https://..." class="w-full border p-2 rounded-lg text-sm">
+        </div>
+
+        <button type="submit" id="submit-btn" class="sm:col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition mt-2">
+          Додати товар у каталог
+        </button>
       </form>
     </div>
 
-    <!-- Таблиця товарів -->
+    <!-- Список товарів -->
     <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
       <h2 class="text-lg font-bold text-gray-700">🥗 Управління позиціями</h2>
       <div class="overflow-x-auto">
@@ -70,7 +86,7 @@
             </tr>
           </thead>
           <tbody id="products-list" class="divide-y">
-            <!-- Список завантажується скриптом -->
+            <!-- Завантажується динамічно -->
           </tbody>
         </table>
       </div>
@@ -88,12 +104,12 @@
         document.getElementById('status-input').value = settings.status_text;
       }
 
-      const { data: products } = await _supabase.from('products').select('*').order('category', { ascending: true });
+      const { data: products } = await _supabase.from('products').select('*').order('id', { ascending: false });
       const tbody = document.getElementById('products-list');
       tbody.innerHTML = '';
 
       if (!products || products.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-400">Список порожній</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-400">Товари відсутні</td></tr>`;
         return;
       }
 
@@ -102,7 +118,7 @@
         tr.className = p.is_available ? '' : 'bg-gray-50 opacity-60';
         tr.innerHTML = `
           <td class="py-3">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
               ${p.image_url ? `<img src="${p.image_url}" class="w-10 h-10 object-cover rounded-lg border">` : `<div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">📷</div>`}
               <div>
                 <div class="font-bold text-gray-800">${p.title}</div>
@@ -141,27 +157,49 @@
       loadAdminData();
     }
 
+    function compressImage(file, maxWidth = 600, quality = 0.7) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+        };
+      });
+    }
+
     async function addProduct(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('submit-btn');
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Збереження товару...';
+      submitBtn.innerText = 'Обробка та збереження...';
 
       const title = document.getElementById('new-title').value;
       const category = document.getElementById('new-category').value;
       const price = parseFloat(document.getElementById('new-price').value);
       const unit = document.getElementById('new-unit').value;
+      
       const fileInput = document.getElementById('new-image-file');
+      const urlInput = document.getElementById('new-image-url').value.trim();
 
-      let image_url = null;
+      let image_url = urlInput || null;
 
       if (fileInput.files && fileInput.files[0]) {
-        const file = fileInput.files[0];
-        image_url = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.readAsDataURL(file);
-        });
+        image_url = await compressImage(fileInput.files[0]);
       }
 
       await _supabase.from('products').insert([{ title, category, price, unit, image_url, is_available: true }]);
