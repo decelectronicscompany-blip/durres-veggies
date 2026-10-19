@@ -258,7 +258,6 @@
           if (diffDays <= 7) weekSum += Number(o.total_amount || 0);
           if (diffDays <= 30) monthSum += Number(o.total_amount || 0);
 
-          // Аналітика товарів із замовлень
           if (o.items) {
             for (const id in o.items) {
               const item = o.items[id];
@@ -269,10 +268,10 @@
 
           const dateFormatted = orderDate.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
           
-            let itemsSummary = '';
-            if (o.items) {
-              itemsSummary = Object.values(o.items).map(i => `${i.title} (${i.qty} ${i.unit})`).join(', ');
-            }
+          let itemsSummary = '';
+          if (o.items) {
+            itemsSummary = Object.values(o.items).map(i => `${i.title} (${i.qty} ${i.unit})`).join(', ');
+          }
 
           const tr = document.createElement('tr');
           tr.className = o.is_b2b ? 'bg-amber-50/50' : '';
@@ -288,11 +287,9 @@
           ordersTbody.appendChild(tr);
         });
 
-        // Виводимо статистику
         document.getElementById('stat-week').innerText = `${weekSum.toLocaleString()} Лек`;
         document.getElementById('stat-month').innerText = `${monthSum.toLocaleString()} Лек`;
 
-        // Виводимо топ товарів
         const sortedProducts = Object.entries(productCounts).sort((a, b) => b[1] - a[1]);
         const analyticsContainer = document.getElementById('analytics-products');
         analyticsContainer.innerHTML = '';
@@ -392,7 +389,7 @@
       submitBtn.disabled = true;
       submitBtn.innerText = 'Обробка та збереження...';
 
-      const title = document.getElementById('new-title'].value;
+      const title = document.getElementById('new-title').value;
       const selectCat = document.getElementById('new-category-select').value;
       const customCat = document.getElementById('new-category-custom').value.trim();
       
@@ -418,7 +415,7 @@
       document.getElementById('new-category-custom').classList.add('hidden');
       submitBtn.disabled = false;
       submitBtn.innerText = 'Додати товар у каталог';
-      loadAdmin-Data();
+      loadAdminData();
     }
 
     async function deleteProduct(id) {
