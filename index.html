@@ -169,12 +169,14 @@
     let deferredPrompt = null;
 
     const productDictionary = {
+      // Категорії
       "ОВОЧІ": { en: "VEGETABLES", sq: "PERIME", ru: "ОВОЩИ" },
       "ФРУКТИ": { en: "FRUITS", sq: "PEMË", ru: "ФРУКТЫ" },
       "ЗЕЛЕНЬ": { en: "HERBS", sq: "ERËZA", ru: "ЗЕЛЕНЬ" },
       "ЯГОДИ": { en: "BERRIES", sq: "FRUTA MALIT", ru: "ЯГОДЫ" },
       "ІНШЕ": { en: "OTHER", sq: "TË TJERA", ru: "ДРУГОЕ" },
 
+      // Продукти
       "Помідори рожеві": { en: "Pink Tomatoes", sq: "Domate rozë", ru: "Помидоры розовые" },
       "Огірки місцеві": { en: "Local Cucumbers", sq: "Kastravecë vendi", ru: "Огурцы местные" },
       "Картопля молода": { en: "Young Potatoes", sq: "Patate të reja", ru: "Картофель молодой" },
@@ -195,8 +197,10 @@
     };
 
     function getTranslatedTerm(text) {
-      if (currentLang === 'uk' || !text) return text;
-      const entry = productDictionary[text];
+      if (!text) return text;
+      // Шукаємо в словнику у верхньому регістрі або точному співпадінні
+      const upper = text.toUpperCase();
+      const entry = productDictionary[text] || productDictionary[upper];
       if (entry && entry[currentLang]) {
         return entry[currentLang];
       }
