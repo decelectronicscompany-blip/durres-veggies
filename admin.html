@@ -15,6 +15,30 @@
       <a href="index.html" target="_blank" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg font-medium">👀 Відкрити сайт</a>
     </div>
 
+    <!-- Аналітика продажів та хіти -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-white p-5 rounded-xl shadow-sm space-y-3">
+        <h2 class="text-base font-bold text-gray-700">📊 Статистика продажів</h2>
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+            <p class="text-xs text-emerald-700 font-semibold">За тиждень</p>
+            <p id="stat-week" class="text-lg font-bold text-emerald-900 mt-1">0 Лек</p>
+          </div>
+          <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+            <p class="text-xs text-emerald-700 font-semibold">За місяць</p>
+            <p id="stat-month" class="text-lg font-bold text-emerald-900 mt-1">0 Лек</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl shadow-sm space-y-3">
+        <h2 class="text-base font-bold text-gray-700">🔥 Найпопулярніші товари (Товари-хіти)</h2>
+        <div id="analytics-products" class="space-y-1.5 text-sm max-h-32 overflow-y-auto">
+          <p class="text-gray-400 text-xs">Немає даних про замовлення</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Блок-статус на сайті -->
     <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
       <h2 class="text-lg font-bold text-gray-700">📌 Блок-статус на сайті</h2>
@@ -102,6 +126,27 @@
       </div>
     </div>
 
+    <!-- Історія замовлень -->
+    <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
+      <h2 class="text-lg font-bold text-gray-700">📦 Історія замовлень</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="border-b text-gray-500 text-xs">
+              <th class="pb-2">Дата</th>
+              <th class="pb-2">Клієнт / Заклад</th>
+              <th class="pb-2">Контакт</th>
+              <th class="pb-2">Товари</th>
+              <th class="pb-2 text-right">Сума</th>
+            </tr>
+          </thead>
+          <tbody id="orders-list" class="divide-y">
+            <!-- Динамічно -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- База клієнтів -->
     <div class="bg-white p-5 rounded-xl shadow-sm space-y-4">
       <h2 class="text-lg font-bold text-gray-700">👥 База постійних клієнтів</h2>
@@ -135,6 +180,7 @@
         document.getElementById('status-input').value = settings.status_text;
       }
 
+      // 1. Завантаження товарів
       const { data: products } = await _supabase.from('products').select('*').order('id', { ascending: false });
       const tbody = document.getElementById('products-list');
       tbody.innerHTML = '';
@@ -192,6 +238,80 @@
         });
       }
 
+      // 2. Завантаження історії замовлень та аналітика
+      const { data: orders } = await _supabase.from('orders').select('*').order('created_at', { ascending: false });
+      const ordersTbody = document.getElementById('orders-list');
+      ordersTbody.innerHTML = '';
+
+      if (!orders || orders.length === 0) {
+        ordersTbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-400">Поки немає замовлень</td></tr>`;
+      } else {
+        let weekSum = 0;
+        let monthSum = 0;
+        const now = new Date();
+        const productCounts = {};
+
+        orders.forEach(o => {
+          const orderDate = new Date(o.created_at);
+          const diffDays = (now - orderDate) / (1000 * 60 * 60 * 24);
+
+          if (diffDays <= 7) weekSum += Number(o.total_amount || 0);
+          if (diffDays <= 30) monthSum += Number(o.total_amount || 0);
+
+          // Аналітика товарів із замовлень
+          if (o.items) {
+            for (const id in o.items) {
+              const item = o.items[id];
+              if (!productCounts[item.title]) productCounts[item.title] = 0;
+              productCounts[item.title] += Number(item.qty || 0);
+            }
+          }
+
+          const dateFormatted = orderDate.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+          
+            let itemsSummary = '';
+            if (o.items) {
+              itemsSummary = Object.values(o.items).map(i => `${i.title} (${i.qty} ${i.unit})`).join(', ');
+            }
+
+          const tr = document.createElement('tr');
+          tr.className = o.is_b2b ? 'bg-amber-50/50' : '';
+          tr.innerHTML = `
+            <td class="py-3 text-xs text-gray-500 whitespace-nowrap">${dateFormatted}</td>
+            <td class="py-3 font-semibold text-gray-800">
+              ${o.is_b2b ? '🏢 ' : '👤 '}${o.client_name}
+            </td>
+            <td class="py-3 text-emerald-600">${o.client_contact}</td>
+            <td class="py-3 text-gray-600 truncate max-w-xs" title="${itemsSummary}">${itemsSummary}</td>
+            <td class="py-3 text-right font-bold text-gray-800 whitespace-nowrap">${o.total_amount} Лек</td>
+          `;
+          ordersTbody.appendChild(tr);
+        });
+
+        // Виводимо статистику
+        document.getElementById('stat-week').innerText = `${weekSum.toLocaleString()} Лек`;
+        document.getElementById('stat-month').innerText = `${monthSum.toLocaleString()} Лек`;
+
+        // Виводимо топ товарів
+        const sortedProducts = Object.entries(productCounts).sort((a, b) => b[1] - a[1]);
+        const analyticsContainer = document.getElementById('analytics-products');
+        analyticsContainer.innerHTML = '';
+        
+        if (sortedProducts.length === 0) {
+          analyticsContainer.innerHTML = `<p class="text-gray-400 text-xs">Немає даних</p>`;
+        } else {
+          sortedProducts.slice(0, 5).forEach(([title, qty], index) => {
+            analyticsContainer.innerHTML += `
+              <div class="flex justify-between items-center bg-gray-50 px-3 py-1.5 rounded-lg border">
+                <span class="font-medium text-gray-700">${index + 1}. ${title}</span>
+                <span class="font-bold text-emerald-600">${qty} од.</span>
+              </div>
+            `;
+          });
+        }
+      }
+
+      // 3. Завантаження клієнтів
       const { data: clients } = await _supabase.from('clients').select('*').order('last_order_at', { ascending: false });
       const clientsTbody = document.getElementById('clients-list');
       clientsTbody.innerHTML = '';
@@ -272,7 +392,7 @@
       submitBtn.disabled = true;
       submitBtn.innerText = 'Обробка та збереження...';
 
-      const title = document.getElementById('new-title').value;
+      const title = document.getElementById('new-title'].value;
       const selectCat = document.getElementById('new-category-select').value;
       const customCat = document.getElementById('new-category-custom').value.trim();
       
@@ -298,7 +418,7 @@
       document.getElementById('new-category-custom').classList.add('hidden');
       submitBtn.disabled = false;
       submitBtn.innerText = 'Додати товар у каталог';
-      loadAdminData();
+      loadAdmin-Data();
     }
 
     async function deleteProduct(id) {
