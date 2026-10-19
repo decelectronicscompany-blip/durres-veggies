@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <!-- Налаштування PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -50,19 +49,19 @@
     </button>
   </div>
 
-  <!-- Швидка навігація по категоріях -->
+  <!-- Навігація по категоріях -->
   <div class="max-w-md mx-auto px-4 pt-4">
     <div id="category-nav" class="bg-white p-1.5 rounded-2xl border shadow-sm flex flex-wrap justify-center items-center gap-1.5">
-      <!-- Генерується динамічно -->
+      <!-- Динамічно -->
     </div>
   </div>
 
-  <!-- Каталог для покупців -->
+  <!-- Каталог -->
   <main class="max-w-md mx-auto p-4 space-y-5" id="products-container">
     <p class="text-center text-gray-400 py-8" id="txt-loading">Завантаження свіжих продуктів...</p>
   </main>
 
-  <!-- Футер з мовами та кнопками -->
+  <!-- Футер -->
   <footer class="max-w-md mx-auto px-4 py-6 border-t mt-8 text-center space-y-4 text-xs text-gray-500">
     <div class="space-y-2">
       <p class="font-semibold text-gray-600" id="txt-lang-title">Мова / Language / Gjuha:</p>
@@ -728,6 +727,28 @@
 
       await saveClientToDatabase(name, contact, address);
 
+      let total = 0;
+      for (const id in cart) {
+        total += cart[id].price * cart[id].qty;
+      }
+
+      // 1. Зберігаємо замовлення в базу даних Supabase (Історія + Аналітика)
+      try {
+        await _supabase.from('orders').insert([{
+          client_name: name,
+          client_contact: contact,
+          address: address,
+          delivery_time: deliveryTime,
+          comment: comment || '',
+          total_amount: total,
+          items: cart,
+          is_b2b: isB2BMode
+        }]);
+      } catch (err) {
+        console.error('Order save to DB error:', err);
+      }
+
+      // 2. Формуємо текст для Telegram
       let orderText = isB2BMode ? `🏢 [B2B / Ресторан] Нове замовлення!\n\n` : `🛒 Нове замовлення у Дурресі!\n\n`;
       orderText += `👤 Назва / Ім'я: ${name}\n`;
       orderText += `📞 Контакт: ${contact}\n`;
@@ -736,11 +757,9 @@
       if (comment) orderText += `💬 Коментар: ${comment}\n\n`;
       orderText += `📦 Товари у кошику:\n`;
 
-      let total = 0;
       for (const id in cart) {
         const item = cart[id];
         const sum = item.price * item.qty;
-        total += sum;
         orderText += `• ${item.title}: ${item.qty} ${item.unit} = ${sum} Лек\n`;
       }
 
