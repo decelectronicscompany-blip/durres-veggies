@@ -709,8 +709,6 @@
         cart[id] = { title: product.title, price: activePrice, unit: product.unit, qty: 0 };
       }
       cart[id].price = activePrice;
-      
-      // Запобігаємо помилкам із плаваючою крапкою в JS
       cart[id].qty = Math.round((cart[id].qty + change) * 100) / 100;
 
       if (cart[id].qty <= 0) {
@@ -798,9 +796,11 @@
       for (const id in cart) {
         total += Math.round(cart[id].price * cart[id].qty);
       }
+      total = Math.round(total);
 
+      // Запис замовлення у Supabase з перевіркою помилок
       try {
-        await _supabase.from('orders').insert([{
+        const { data, error } = await _supabase.from('orders').insert([{
           client_name: name,
           client_contact: contact,
           address: address,
@@ -810,8 +810,14 @@
           items: cart,
           is_b2b: isB2BMode
         }]);
+
+        if (error) {
+          console.error('Помилка збереження в Supabase (orders):', error);
+        } else {
+          console.log('Замовлення успішно збережено в історію:', data);
+        }
       } catch (err) {
-        console.error('Order save to DB error:', err);
+        console.error('Order save to DB exception:', err);
       }
 
       let orderText = isB2BMode ? `🏢 [B2B / Ресторан] Нове замовлення!\n\n` : `🛒 Нове замовлення у Дурресі!\n\n`;
@@ -853,7 +859,7 @@
           await renderCatalog(productsCache);
           updateCartUI();
         } else {
-          alert('Error: ' + (resData.description || 'Bot error'));
+          alert('Error Telegram Bot: ' + (resData.description || 'Bot error'));
         }
       } catch (err) {
         alert("Connection error.");
