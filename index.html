@@ -19,7 +19,7 @@
 </head>
 <body class="bg-gray-50 pb-36 font-sans text-gray-800">
 
-  <!-- Индикатор активного B2B режима -->
+  <!-- Індикатор активного B2B режиму -->
   <div id="b2b-indicator" class="bg-amber-600 text-white text-xs font-bold py-1.5 px-4 text-center hidden flex justify-between items-center z-40 sticky top-0">
     <span id="txt-b2b-indicator">🏢 Режим партнера (B2B / Ресторан): оптові ціни ввімкнено</span>
     <button onclick="toggleB2BMode()" id="txt-b2b-off" class="bg-amber-700 hover:bg-amber-800 px-2 py-0.5 rounded text-[10px]">Вимкнути</button>
@@ -35,7 +35,7 @@
     </div>
   </header>
 
-  <!-- Кнопка добавления на экран -->
+  <!-- Кнопка додавання на екран -->
   <div id="install-banner" class="max-w-md mx-auto m-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between hidden">
     <div class="flex items-center space-x-3">
       <span class="text-2xl">📲</span>
@@ -49,10 +49,10 @@
     </button>
   </div>
 
-  <!-- Навигация по категориям -->
+  <!-- Навігація по категоріях -->
   <div class="max-w-md mx-auto px-4 pt-4">
     <div id="category-nav" class="bg-white p-1.5 rounded-2xl border shadow-sm flex flex-wrap justify-center items-center gap-1.5">
-      <!-- Динамически -->
+      <!-- Динамічно -->
     </div>
   </div>
 
@@ -88,7 +88,7 @@
     </div>
   </footer>
 
-  <!-- Нижняя корзина -->
+  <!-- Нижній кошик -->
   <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg hidden z-20">
     <div class="max-w-md mx-auto flex justify-between items-center">
       <div>
@@ -101,7 +101,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно заказа -->
+  <!-- Модальне вікно замовлення -->
   <div id="checkout-modal" class="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center hidden">
     <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -169,6 +169,9 @@
     let deferredPrompt = null;
     let customStatusText = "";
 
+    // Кеш автоматичних перекладів у браузері
+    let dynamicTranslations = JSON.parse(localStorage.getItem('auto_trans_cache') || '{}');
+
     const productDictionary = {
       "ОВОЧІ": { en: "VEGETABLES", sq: "PERIME", ru: "ОВОЩИ" },
       "ФРУКТИ": { en: "FRUITS", sq: "PEMË", ru: "ФРУКТЫ" },
@@ -195,14 +198,40 @@
       "Авокадо": { en: "Avocado", sq: "Avokado", ru: "Авокадо" }
     };
 
-    function getTranslatedTerm(text) {
+    async function getTranslatedTerm(text) {
       if (!text) return text;
+      if (currentLang === 'uk') return text;
+
+      // 1. Перевіряємо локальний словник
       const upper = text.toUpperCase();
       const entry = productDictionary[text] || productDictionary[upper];
       if (entry && entry[currentLang]) {
         return entry[currentLang];
       }
-      return text;
+
+      // 2. Перевіряємо кеш автоматичних перекладів
+      const cacheKey = `${text}_${currentLang}`;
+      if (dynamicTranslations[cacheKey]) {
+        return dynamicTranslations[cacheKey];
+      }
+
+      // 3. Якщо нового товару немає в словнику — перекладаємо через безкоштовний API
+      try {
+        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=uk|${currentLang}`);
+        const data = await res.json();
+        if (data && data.responseData && data.responseData.translatedText) {
+          let translated = data.responseData.translatedText;
+          if (!translated.includes('MYMEMORY WARNING')) {
+            dynamicTranslations[cacheKey] = translated;
+            localStorage.setItem('auto_trans_cache', JSON.stringify(dynamicTranslations));
+            return translated;
+          }
+        }
+      } catch (e) {
+        console.error('Auto-translation error:', e);
+      }
+
+      return text; // Fallback
     }
 
     const translations = {
@@ -335,7 +364,7 @@
         modalTitle: "Ваш заказ",
         lblName: "Название заведения / Ваше имя",
         lblContact: "Телефон или Telegram/WhatsApp",
-        lblAddress: "Адрес или геоточка заведения",
+        lblAddress: "Адреса или геоточка заведения",
         addrPlaceholder: "Напр: возле маркета / или вставьте ссылку из Maps",
         btnGeo: "📍 Взять мою геоточку",
         lblTime: "Желаемое время доставки",
@@ -440,13 +469,12 @@
       );
     }
 
-    function applyLanguage(lang) {
+    async function applyLanguage(lang) {
       currentLang = lang;
       const t = translations[lang] || translations.uk;
 
       document.getElementById('txt-header-title').innerText = t.headerTitle;
       
-      // Динамический перевод статус-банера
       const statusEl = document.getElementById('status-banner');
       const defaultPhrases = [
         "Замовлення приймаються 24/7 🍅",
@@ -501,7 +529,7 @@
       }
 
       if (productsCache && productsCache.length > 0) {
-        renderCatalog(productsCache);
+        await renderCatalog(productsCache);
         updateCartUI();
       }
     }
@@ -574,14 +602,14 @@
           productsCache = products;
         }
 
-        applyLanguage(currentLang);
+        await applyLanguage(currentLang);
 
       } catch (err) {
         console.error(err);
       }
     }
 
-    function renderCatalog(products) {
+    async function renderCatalog(products) {
       const container = document.getElementById('products-container');
       const navContainer = document.getElementById('category-nav');
       const t = translations[currentLang] || translations.uk;
@@ -602,7 +630,7 @@
       }
 
       for (const category in groups) {
-        const translatedCategory = getTranslatedTerm(category);
+        const translatedCategory = await getTranslatedTerm(category);
 
         const catBtn = document.createElement('button');
         catBtn.className = "bg-emerald-50 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl border border-emerald-200/60 shadow-xs hover:bg-emerald-100 transition";
@@ -621,8 +649,8 @@
         const itemsWrapper = document.createElement('div');
         itemsWrapper.className = "space-y-2";
 
-        groups[category].forEach(p => {
-          const translatedTitle = getTranslatedTerm(p.title);
+        for (const p of groups[category]) {
+          const translatedTitle = await getTranslatedTerm(p.title);
           const currentPrice = getProductPrice(p);
           
           let priceBadge = '';
@@ -659,7 +687,7 @@
             ${photoContainerHtml}
           `;
           itemsWrapper.appendChild(card);
-        });
+        }
 
         section.appendChild(itemsWrapper);
         container.appendChild(section);
@@ -714,7 +742,7 @@
       else cartBar.classList.add('hidden');
     }
 
-    function openCheckoutModal() {
+    async function openCheckoutModal() {
       const t = translations[currentLang] || translations.uk;
       const list = document.getElementById('cart-items-list');
       list.innerHTML = '';
@@ -724,7 +752,7 @@
         const item = cart[id];
         const sum = item.price * item.qty;
         total += sum;
-        const translatedTitle = getTranslatedTerm(item.title);
+        const translatedTitle = await getTranslatedTerm(item.title);
         list.innerHTML += `<div class="flex justify-between"><span>${translatedTitle} (${item.qty} ${item.unit})</span> <span class="font-semibold">${sum} Лек</span></div>`;
       }
 
@@ -815,7 +843,7 @@
           alert(t.successAlert);
           closeCheckoutModal();
           cart = {};
-          renderCatalog(productsCache);
+          await renderCatalog(productsCache);
           updateCartUI();
         } else {
           alert('Error: ' + (resData.description || 'Bot error'));
