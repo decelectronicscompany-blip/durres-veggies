@@ -167,16 +167,15 @@
     let cart = {};
     let productsCache = [];
     let deferredPrompt = null;
+    let customStatusText = "";
 
     const productDictionary = {
-      // Категорії
       "ОВОЧІ": { en: "VEGETABLES", sq: "PERIME", ru: "ОВОЩИ" },
       "ФРУКТИ": { en: "FRUITS", sq: "PEMË", ru: "ФРУКТЫ" },
       "ЗЕЛЕНЬ": { en: "HERBS", sq: "ERËZA", ru: "ЗЕЛЕНЬ" },
       "ЯГОДИ": { en: "BERRIES", sq: "FRUTA MALIT", ru: "ЯГОДЫ" },
       "ІНШЕ": { en: "OTHER", sq: "TË TJERA", ru: "ДРУГОЕ" },
 
-      // Продукти
       "Помідори рожеві": { en: "Pink Tomatoes", sq: "Domate rozë", ru: "Помидоры розовые" },
       "Огірки місцеві": { en: "Local Cucumbers", sq: "Kastravecë vendi", ru: "Огурцы местные" },
       "Картопля молода": { en: "Young Potatoes", sq: "Patate të reja", ru: "Картофель молодой" },
@@ -198,7 +197,6 @@
 
     function getTranslatedTerm(text) {
       if (!text) return text;
-      // Шукаємо в словнику у верхньому регістрі або точному співпадінні
       const upper = text.toUpperCase();
       const entry = productDictionary[text] || productDictionary[upper];
       if (entry && entry[currentLang]) {
@@ -210,6 +208,7 @@
     const translations = {
       uk: {
         headerTitle: "🥑 Фрукти & Овочі Дуррес",
+        statusDefault: "Замовлення приймаються 24/7 🍅",
         pwaTitle: "Додати на екран телефону",
         pwaSub: "Для швидкого та зручного замовлення",
         pwaBtn: "Додати на екран",
@@ -248,6 +247,7 @@
       },
       en: {
         headerTitle: "🥑 Fruits & Veggies Durrës",
+        statusDefault: "Orders accepted 24/7 🍅",
         pwaTitle: "Add to Home Screen",
         pwaSub: "For fast and easy ordering",
         pwaBtn: "Add to Screen",
@@ -286,6 +286,7 @@
       },
       sq: {
         headerTitle: "🥑 Pemë & Perime Durrës",
+        statusDefault: "Porositë pranohen 24/7 🍅",
         pwaTitle: "Shto në ekranin bazë",
         pwaSub: "Për porosi të shpejta dhe të lehta",
         pwaBtn: "Shto në ekran",
@@ -324,6 +325,7 @@
       },
       ru: {
         headerTitle: "🥑 Фрукты & Овощи Дуррес",
+        statusDefault: "Заказы принимаются круглосуточно 24/7 🍅",
         pwaTitle: "Добавить на экран телефона",
         pwaSub: "Для быстрого и удобного заказа",
         pwaBtn: "Добавить на экран",
@@ -443,6 +445,15 @@
       const t = translations[lang] || translations.uk;
 
       document.getElementById('txt-header-title').innerText = t.headerTitle;
+      
+      // Відображаємо перекладений статус або кастомний
+      const statusEl = document.getElementById('status-banner');
+      if (customStatusText && customStatusText !== "Замовлення приймаються до 14:00 🥦") {
+        statusEl.innerText = customStatusText;
+      } else {
+        statusEl.innerText = t.statusDefault;
+      }
+
       document.getElementById('txt-pwa-title').innerText = t.pwaTitle;
       document.getElementById('txt-pwa-sub').innerText = t.pwaSub;
       document.getElementById('txt-pwa-btn').innerText = t.pwaBtn;
@@ -547,7 +558,7 @@
 
         const { data: settings } = await _supabase.from('settings').select('*').single();
         if (settings && settings.status_text) {
-          document.getElementById('status-banner').innerText = settings.status_text;
+          customStatusText = settings.status_text;
         }
 
         const { data: products } = await _supabase.from('products').select('*').order('id', { ascending: true });
