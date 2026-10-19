@@ -50,7 +50,7 @@
     </button>
   </div>
 
-  <!-- Швидка симетрична навігація по категоріях -->
+  <!-- Швидка навігація по категоріях -->
   <div class="max-w-md mx-auto px-4 pt-4">
     <div id="category-nav" class="bg-white p-1.5 rounded-2xl border shadow-sm flex flex-wrap justify-center items-center gap-1.5">
       <!-- Генерується динамічно -->
@@ -351,6 +351,11 @@
       }
     };
 
+    function changeLanguage(lang) {
+      localStorage.setItem('app_lang', lang);
+      window.location.reload();
+    }
+
     function toggleB2BMode() {
       if (!isB2BMode) {
         const pass = prompt("Введіть пароль доступу для ресторанів та партнерів:");
@@ -424,8 +429,7 @@
 
     function applyLanguage(lang) {
       currentLang = lang;
-      localStorage.setItem('app_lang', lang);
-      const t = translations[lang];
+      const t = translations[lang] || translations.uk;
 
       document.getElementById('txt-header-title').innerText = t.headerTitle;
       document.getElementById('txt-pwa-title').innerText = t.pwaTitle;
@@ -469,10 +473,6 @@
         renderCatalog(productsCache);
         updateCartUI();
       }
-    }
-
-    function changeLanguage(lang) {
-      applyLanguage(lang);
     }
 
     function loadSavedUserData() {
@@ -553,7 +553,7 @@
     function renderCatalog(products) {
       const container = document.getElementById('products-container');
       const navContainer = document.getElementById('category-nav');
-      const t = translations[currentLang];
+      const t = translations[currentLang] || translations.uk;
       container.innerHTML = '';
       navContainer.innerHTML = '';
 
@@ -659,7 +659,7 @@
     }
 
     function updateCartUI() {
-      const t = translations[currentLang];
+      const t = translations[currentLang] || translations.uk;
       let total = 0;
       let count = 0;
       for (const id in cart) {
@@ -684,7 +684,7 @@
     }
 
     function openCheckoutModal() {
-      const t = translations[currentLang];
+      const t = translations[currentLang] || translations.uk;
       const list = document.getElementById('cart-items-list');
       list.innerHTML = '';
       let total = 0;
@@ -714,7 +714,7 @@
 
     async function sendOrder(e) {
       e.preventDefault();
-      const t = translations[currentLang];
+      const t = translations[currentLang] || translations.uk;
       
       const btn = document.getElementById('submit-btn');
       btn.disabled = true;
