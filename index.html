@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
+  <!-- Налаштування PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,14 +20,14 @@
 </head>
 <body class="bg-gray-50 pb-36 font-sans text-gray-800">
 
-  <!-- Індикатор активного B2B режиму (з'являється тільки для ресторанів) -->
+  <!-- Індикатор активного B2B режиму -->
   <div id="b2b-indicator" class="bg-amber-600 text-white text-xs font-bold py-1.5 px-4 text-center hidden flex justify-between items-center z-40 sticky top-0">
-    <span>🏢 Активний режим партнерів (B2B / Ресторан): оптові ціни ввімкнено</span>
+    <span>🏢 Режим партнера (B2B / Ресторан): оптові ціни ввімкнено</span>
     <button onclick="toggleB2BMode()" class="bg-amber-700 hover:bg-amber-800 px-2 py-0.5 rounded text-[10px]">Вимкнути</button>
   </div>
 
   <!-- Шапка -->
-  <header class="bg-emerald-600 text-white p-4 sticky top-0 z-25 shadow-md">
+  <header class="bg-emerald-600 text-white p-4 sticky top-0 z-20 shadow-md">
     <div class="max-w-md mx-auto text-center">
       <h1 class="text-xl font-bold" id="txt-header-title">🥑 Фрукти & Овочі Дуррес</h1>
       <p id="status-banner" class="text-xs bg-emerald-700/60 mt-1.5 px-3 py-1 rounded-lg text-emerald-100 font-medium inline-block">
@@ -49,19 +50,19 @@
     </button>
   </div>
 
-  <!-- Навігація по категоріях -->
+  <!-- Швидка симетрична навігація по категоріях -->
   <div class="max-w-md mx-auto px-4 pt-4">
     <div id="category-nav" class="bg-white p-1.5 rounded-2xl border shadow-sm flex flex-wrap justify-center items-center gap-1.5">
-      <!-- Динамічно -->
+      <!-- Генерується динамічно -->
     </div>
   </div>
 
-  <!-- Каталог -->
+  <!-- Каталог для покупців -->
   <main class="max-w-md mx-auto p-4 space-y-5" id="products-container">
     <p class="text-center text-gray-400 py-8" id="txt-loading">Завантаження свіжих продуктів...</p>
   </main>
 
-  <!-- Футер з мовами, кнопкою чату та B2B входом -->
+  <!-- Футер з мовами та кнопками -->
   <footer class="max-w-md mx-auto px-4 py-6 border-t mt-8 text-center space-y-4 text-xs text-gray-500">
     <div class="space-y-2">
       <p class="font-semibold text-gray-600" id="txt-lang-title">Мова / Language / Gjuha:</p>
@@ -76,14 +77,12 @@
       </div>
     </div>
 
-    <!-- Кнопки зв'язку та B2B режиму -->
     <div class="pt-2 flex flex-col gap-2 items-center">
       <a href="https://t.me/durres_veggies" target="_blank" class="inline-flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-100 transition shadow-sm w-full max-w-xs">
         <span>💬</span>
         <span id="txt-chat-btn">Написати нам у Telegram</span>
       </a>
 
-      <!-- Кнопка перемикання для ресторанів -->
       <button onclick="toggleB2BMode()" class="text-[11px] text-gray-400 hover:text-emerald-700 underline transition py-1">
         🏢 <span id="txt-b2b-toggle">Ресторанам / Оптові ціни (B2B)</span>
       </button>
@@ -117,7 +116,7 @@
 
       <form onsubmit="sendOrder(event)" class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-name">Назва закладу / Ім'я</label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1" id="lbl-name">Назва закладу / Ваше ім'я</label>
           <input id="client-name" type="text" required class="w-full border p-2 rounded-lg text-sm" placeholder="Ресторан 'Adriatik' / Олена">
         </div>
         <div>
@@ -215,9 +214,9 @@
         totalLabel: "Сума:",
         cartBtn: "Кошик",
         modalTitle: "Ваше замовлення",
-        lblName: "Ваше ім'я / Заклад",
+        lblName: "Назва закладу / Ваше ім'я",
         lblContact: "Телефон або Telegram/WhatsApp",
-        lblAddress: "Адреса або посилання на геоточку",
+        lblAddress: "Адреса або геоточка закладу",
         addrPlaceholder: "Напр: Shkodër, біля маркету / або посилання з Maps",
         btnGeo: "📍 Взяти мою геоточку",
         lblTime: "Бажаний час доставки",
@@ -251,7 +250,7 @@
         totalLabel: "Total:",
         cartBtn: "Cart",
         modalTitle: "Your Order",
-        lblName: "Your Name / Venue",
+        lblName: "Venue / Your Name",
         lblContact: "Phone or Telegram/WhatsApp",
         lblAddress: "Address or Map Location Link",
         addrPlaceholder: "e.g., near market / or paste Google Maps link",
@@ -287,7 +286,7 @@
         totalLabel: "TotaI:",
         cartBtn: "Shporta",
         modalTitle: "Porosia juaj",
-        lblName: "Emri juaj / Restoranti",
+        lblName: "Restoranti / Emri juaj",
         lblContact: "Telefon ose Telegram/WhatsApp",
         lblAddress: "Adresa ose linku i vendndodhjes",
         addrPlaceholder: "p.sh. afër marketit / ose vendos linkun e Maps",
@@ -323,9 +322,9 @@
         totalLabel: "Сумма:",
         cartBtn: "Корзина",
         modalTitle: "Ваш заказ",
-        lblName: "Ваше имя / Заведение",
+        lblName: "Название заведения / Ваше имя",
         lblContact: "Телефон или Telegram/WhatsApp",
-        lblAddress: "Адрес или ссылка на геоточку",
+        lblAddress: "Адрес или геоточка заведения",
         addrPlaceholder: "Напр: возле маркета / или вставьте ссылку из Maps",
         btnGeo: "📍 Взять мою геоточку",
         lblTime: "Желаемое время доставки",
@@ -353,9 +352,23 @@
     };
 
     function toggleB2BMode() {
-      isB2BMode = !isB2BMode;
-      localStorage.setItem('b2b_mode', isB2BMode);
-      
+      if (!isB2BMode) {
+        const pass = prompt("Введіть пароль доступу для ресторанів та партнерів:");
+        if (pass === "2001") {
+          isB2BMode = true;
+          localStorage.setItem('b2b_mode', 'true');
+          alert("✅ Доступ надано! Увімкнено оптові ціни для ресторанів.");
+        } else if (pass !== null) {
+          alert("❌ Невірний пароль!");
+          return;
+        } else {
+          return;
+        }
+      } else {
+        isB2BMode = false;
+        localStorage.setItem('b2b_mode', 'false');
+      }
+
       const indicator = document.getElementById('b2b-indicator');
       if (isB2BMode) {
         indicator.classList.remove('hidden');
@@ -636,7 +649,7 @@
       if (!cart[id]) {
         cart[id] = { title: product.title, price: activePrice, unit: product.unit, qty: 0 };
       }
-      cart[id].price = activePrice; // оновлюємо ціну на випадок перемикання режиму
+      cart[id].price = activePrice;
       cart[id].qty += change;
       if (cart[id].qty <= 0) delete cart[id];
 
@@ -715,7 +728,6 @@
 
       await saveClientToDatabase(name, contact, address);
 
-      // Формуємо текст для Telegram із поміткою B2B, якщо режим активовано
       let orderText = isB2BMode ? `🏢 [B2B / Ресторан] Нове замовлення!\n\n` : `🛒 Нове замовлення у Дурресі!\n\n`;
       orderText += `👤 Назва / Ім'я: ${name}\n`;
       orderText += `📞 Контакт: ${contact}\n`;
