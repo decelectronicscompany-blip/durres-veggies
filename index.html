@@ -21,8 +21,8 @@
 
   <!-- Індикатор активного B2B режиму -->
   <div id="b2b-indicator" class="bg-amber-600 text-white text-xs font-bold py-1.5 px-4 text-center hidden flex justify-between items-center z-40 sticky top-0">
-    <span>🏢 Режим партнера (B2B / Ресторан): оптові ціни ввімкнено</span>
-    <button onclick="toggleB2BMode()" class="bg-amber-700 hover:bg-amber-800 px-2 py-0.5 rounded text-[10px]">Вимкнути</button>
+    <span id="txt-b2b-indicator">🏢 Режим партнера (B2B / Ресторан): оптові ціни ввімкнено</span>
+    <button onclick="toggleB2BMode()" id="txt-b2b-off" class="bg-amber-700 hover:bg-amber-800 px-2 py-0.5 rounded text-[10px]">Вимкнути</button>
   </div>
 
   <!-- Шапка -->
@@ -233,6 +233,8 @@
         successAlert: "Дякуємо! Ваше замовлення прийнято в обробку.",
         chatBtn: "Написати нам у Telegram",
         b2bToggle: "Ресторанам / Оптові ціни (B2B)",
+        b2bIndicator: "🏢 Режим партнера (B2B / Ресторан): оптові ціни ввімкнено",
+        b2bOff: "Вимкнути",
         geoLoading: "Визначення локації...",
         geoError: "Не вдалося отримати геолокацію. Дозвольте доступ у браузері.",
         timeAsap: "⚡ Якомога швидше",
@@ -269,6 +271,8 @@
         successAlert: "Thank you! Your order has been placed.",
         chatBtn: "Contact us on Telegram",
         b2bToggle: "For Restaurants / Wholesale (B2B)",
+        b2bIndicator: "🏢 Partner Mode (B2B / Restaurant): wholesale prices enabled",
+        b2bOff: "Turn off",
         geoLoading: "Getting location...",
         geoError: "Could not get location. Allow browser permission.",
         timeAsap: "⚡ As soon as possible",
@@ -305,6 +309,8 @@
         successAlert: "Faleminderit! Porosia juaj u pranua.",
         chatBtn: "Na shkruani në Telegram",
         b2bToggle: "Për Restorante / Çmime me shumicë (B2B)",
+        b2bIndicator: "🏢 Regjimi i partnerit (B2B / Restorant): çmimet me shumicë u aktivizuan",
+        b2bOff: "Fike",
         geoLoading: "Duke marrë lokacionin...",
         geoError: "Nuk u mor dot lokacioni. Lejoni qasjen në shfletues.",
         timeAsap: "⚡ Sa më shpejt të jetë e mundur",
@@ -341,6 +347,8 @@
         successAlert: "Спасибо! Ваш заказ принят в обработку.",
         chatBtn: "Написать нам в Telegram",
         b2bToggle: "Ресторанам / Оптові ціни (B2B)",
+        b2bIndicator: "🏢 Режим партнера (B2B / Ресторан): оптовые цены включены",
+        b2bOff: "Выключить",
         geoLoading: "Определение локации...",
         geoError: "Не удалось получить геолокацию. Разрешите доступ в браузере.",
         timeAsap: "⚡ Как можно скорее",
@@ -449,6 +457,8 @@
       document.getElementById('submit-btn').innerText = t.submitBtn;
       document.getElementById('txt-chat-btn').innerText = t.chatBtn;
       document.getElementById('txt-b2b-toggle').innerText = t.b2bToggle;
+      document.getElementById('txt-b2b-indicator').innerText = t.b2bIndicator;
+      document.getElementById('txt-b2b-off').innerText = t.b2bOff;
 
       document.getElementById('opt-time-asap').innerText = t.timeAsap;
       document.getElementById('opt-time-1').innerText = t.time1;
@@ -732,7 +742,6 @@
         total += cart[id].price * cart[id].qty;
       }
 
-      // 1. Зберігаємо замовлення в базу даних Supabase (Історія + Аналітика)
       try {
         await _supabase.from('orders').insert([{
           client_name: name,
@@ -748,7 +757,6 @@
         console.error('Order save to DB error:', err);
       }
 
-      // 2. Формуємо текст для Telegram
       let orderText = isB2BMode ? `🏢 [B2B / Ресторан] Нове замовлення!\n\n` : `🛒 Нове замовлення у Дурресі!\n\n`;
       orderText += `👤 Назва / Ім'я: ${name}\n`;
       orderText += `📞 Контакт: ${contact}\n`;
