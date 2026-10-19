@@ -169,7 +169,6 @@
     let deferredPrompt = null;
     let customStatusText = "";
 
-    // Кеш автоматичних перекладів у браузері
     let dynamicTranslations = JSON.parse(localStorage.getItem('auto_trans_cache') || '{}');
 
     const productDictionary = {
@@ -202,20 +201,17 @@
       if (!text) return text;
       if (currentLang === 'uk') return text;
 
-      // 1. Перевіряємо локальний словник
       const upper = text.toUpperCase();
       const entry = productDictionary[text] || productDictionary[upper];
       if (entry && entry[currentLang]) {
         return entry[currentLang];
       }
 
-      // 2. Перевіряємо кеш автоматичних перекладів
       const cacheKey = `${text}_${currentLang}`;
       if (dynamicTranslations[cacheKey]) {
         return dynamicTranslations[cacheKey];
       }
 
-      // 3. Якщо нового товару немає в словнику — перекладаємо через безкоштовний API
       try {
         const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=uk|${currentLang}`);
         const data = await res.json();
@@ -231,7 +227,7 @@
         console.error('Auto-translation error:', e);
       }
 
-      return text; // Fallback
+      return text;
     }
 
     const translations = {
@@ -364,7 +360,7 @@
         modalTitle: "Ваш заказ",
         lblName: "Название заведения / Ваше имя",
         lblContact: "Телефон или Telegram/WhatsApp",
-        lblAddress: "Адреса или геоточка заведения",
+        lblAddress: "Адрес или геоточка заведения",
         addrPlaceholder: "Напр: возле маркета / или вставьте ссылку из Maps",
         btnGeo: "📍 Взять мою геоточку",
         lblTime: "Желаемое время доставки",
@@ -652,6 +648,8 @@
         for (const p of groups[category]) {
           const translatedTitle = await getTranslatedTerm(p.title);
           const currentPrice = getProductPrice(p);
+          const isKg = (p.unit || '').toLowerCase().trim() === 'кг';
+          const step = isKg ? 0.5 : 1;
           
           let priceBadge = '';
           if (isB2BMode && p.b2b_price !== null && p.b2b_price !== undefined) {
@@ -669,6 +667,8 @@
             photoContainerHtml = `<div id="photo-${p.id}" class="hidden mt-2 pt-2 border-t"><img src="${p.image_url}" alt="${translatedTitle}" class="w-full h-40 object-cover rounded-lg shadow-inner"></div>`;
           }
 
+          const currentQty = cart[p.id] ? cart[p.id].qty : 0;
+
           card.innerHTML = `
             <div class="flex justify-between items-center">
               <div class="space-y-0.5">
@@ -679,9 +679,9 @@
                 <p class="text-sm font-semibold text-emerald-600">${currentPrice} Лек <span class="text-xs text-gray-400 font-normal">/ ${p.unit}</span> ${priceBadge}</p>
               </div>
               <div class="flex items-center space-x-2">
-                <button type="button" onclick="changeQty(${p.id}, -1)" class="w-8 h-8 rounded-lg bg-gray-100 font-bold text-gray-600 hover:bg-gray-200">-</button>
-                <span id="qty-${p.id}" class="font-bold text-sm min-w-[20px] text-center">${cart[p.id] ? cart[p.id].qty : 0}</span>
-                <button type="button" onclick="changeQty(${p.id}, 1)" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold hover:bg-emerald-200">+</button>
+                <button type="button" onclick="changeQty(${p.id}, -${step})" class="w-8 h-8 rounded-lg bg-gray-100 font-bold text-gray-600 hover:bg-gray-200">-</button>
+                <span id="qty-${p.id}" class="font-bold text-sm min-w-[28px] text-center">${currentQty}</span>
+                <button type="button" onclick="changeQty(${p.id}, ${step})" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold hover:bg-emerald-200">+</button>
               </div>
             </div>
             ${photoContainerHtml}
@@ -709,8 +709,13 @@
         cart[id] = { title: product.title, price: activePrice, unit: product.unit, qty: 0 };
       }
       cart[id].price = activePrice;
-      cart[id].qty += change;
-      if (cart[id].qty <= 0) delete cart[id];
+      
+      // Запобігаємо помилкам із плаваючою крапкою в JS
+      cart[id].qty = Math.round((cart[id].qty + change) * 100) / 100;
+
+      if (cart[id].qty <= 0) {
+        delete cart[id];
+      }
 
       const qtyEl = document.getElementById(`qty-${id}`);
       if (qtyEl) qtyEl.innerText = cart[id] ? cart[id].qty : 0;
@@ -723,8 +728,10 @@
       let count = 0;
       for (const id in cart) {
         total += cart[id].price * cart[id].qty;
-        count += cart[id].qty;
+        count += 1;
       }
+
+      total = Math.round(total);
 
       document.getElementById('cart-total').innerText = total;
       document.getElementById('cart-count').innerText = count;
@@ -750,7 +757,7 @@
 
       for (const id in cart) {
         const item = cart[id];
-        const sum = item.price * item.qty;
+        const sum = Math.round(item.price * item.qty);
         total += sum;
         const translatedTitle = await getTranslatedTerm(item.title);
         list.innerHTML += `<div class="flex justify-between"><span>${translatedTitle} (${item.qty} ${item.unit})</span> <span class="font-semibold">${sum} Лек</span></div>`;
@@ -789,7 +796,7 @@
 
       let total = 0;
       for (const id in cart) {
-        total += cart[id].price * cart[id].qty;
+        total += Math.round(cart[id].price * cart[id].qty);
       }
 
       try {
@@ -817,7 +824,7 @@
 
       for (const id in cart) {
         const item = cart[id];
-        const sum = item.price * item.qty;
+        const sum = Math.round(item.price * item.qty);
         orderText += `• ${item.title}: ${item.qty} ${item.unit} = ${sum} Лек\n`;
       }
 
