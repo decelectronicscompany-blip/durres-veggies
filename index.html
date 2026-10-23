@@ -154,6 +154,17 @@
     </div>
   </div>
 
+  <!-- Модальне вікно для повнорозмірного перегляду фото -->
+  <div id="image-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden" onclick="closeImageModal()">
+    <div class="relative max-w-md w-full bg-white rounded-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+      <button onclick="closeImageModal()" class="absolute top-3 right-3 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg z-10">&times;</button>
+      <img id="modal-full-image" src="" alt="Товар" class="w-full max-h-[70vh] object-contain bg-black/5">
+      <div class="p-4 text-center bg-white">
+        <h3 id="modal-image-title" class="font-bold text-gray-800 text-lg"></h3>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = 'https://pynhbjloaqjxrldfsbxk.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_Mk1VZRJvR_s3Ynltjf1nsQ_bCbIy7m_';
@@ -657,34 +668,44 @@
           }
 
           const card = document.createElement('div');
-          card.className = "bg-white p-3.5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between";
+          card.className = "bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between gap-3";
           
-          let photoButtonHtml = '';
-          let photoContainerHtml = '';
-          
+          // Рендеримо картинку ліворуч (як в адмінці)
+          let photoThumbHtml = '';
           if (p.image_url) {
-            photoButtonHtml = `<button onclick="togglePhoto(${p.id})" class="text-xs text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded font-medium transition">${t.photoBtn}</button>`;
-            photoContainerHtml = `<div id="photo-${p.id}" class="hidden mt-2 pt-2 border-t"><img src="${p.image_url}" alt="${translatedTitle}" class="w-full h-40 object-cover rounded-lg shadow-inner"></div>`;
+            photoThumbHtml = `
+              <div class="relative group cursor-pointer flex-shrink-0" onclick="openImageModal('${p.image_url}', '${translatedTitle.replace(/'/g, "\\'")}')">
+                <img src="${p.image_url}" alt="${translatedTitle}" class="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-lg border border-gray-100 shadow-xs">
+                <div class="absolute inset-0 bg-black/10 rounded-lg group-hover:bg-black/20 transition flex items-center justify-center">
+                  <span class="text-[10px] text-white bg-black/40 px-1 rounded opacity-0 group-hover:opacity-100 transition">🔍</span>
+                </div>
+              </div>
+            `;
+          } else {
+            // Заглушка, якщо немає фото
+            photoThumbHtml = `
+              <div class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 rounded-lg flex items-center justify-center text-xl flex-shrink-0 border border-emerald-100/50">
+                🥗
+              </div>
+            `;
           }
 
           const currentQty = cart[p.id] ? cart[p.id].qty : 0;
 
           card.innerHTML = `
-            <div class="flex justify-between items-center">
-              <div class="space-y-0.5">
-                <div class="flex items-center gap-2">
-                  <h3 class="font-bold text-gray-800 text-sm sm:text-base">${translatedTitle}</h3>
-                  ${photoButtonHtml}
-                </div>
-                <p class="text-sm font-semibold text-emerald-600">${currentPrice} Лек <span class="text-xs text-gray-400 font-normal">/ ${p.unit}</span> ${priceBadge}</p>
-              </div>
-              <div class="flex items-center space-x-2">
-                <button type="button" onclick="changeQty(${p.id}, -${step})" class="w-8 h-8 rounded-lg bg-gray-100 font-bold text-gray-600 hover:bg-gray-200">-</button>
-                <span id="qty-${p.id}" class="font-bold text-sm min-w-[28px] text-center">${currentQty}</span>
-                <button type="button" onclick="changeQty(${p.id}, ${step})" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold hover:bg-emerald-200">+</button>
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              ${photoThumbHtml}
+              <div class="space-y-0.5 min-w-0">
+                <h3 class="font-bold text-gray-800 text-sm sm:text-base truncate leading-tight">${translatedTitle}</h3>
+                <p class="text-xs sm:text-sm font-semibold text-emerald-600">${currentPrice} Лек <span class="text-[11px] text-gray-400 font-normal">/ ${p.unit}</span> ${priceBadge}</p>
               </div>
             </div>
-            ${photoContainerHtml}
+
+            <div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
+              <button type="button" onclick="changeQty(${p.id}, -${step})" class="w-8 h-8 rounded-lg bg-gray-100 font-bold text-gray-600 hover:bg-gray-200 transition">-</button>
+              <span id="qty-${p.id}" class="font-bold text-sm min-w-[24px] text-center">${currentQty}</span>
+              <button type="button" onclick="changeQty(${p.id}, ${step})" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold hover:bg-emerald-200 transition">+</button>
+            </div>
           `;
           itemsWrapper.appendChild(card);
         }
@@ -694,9 +715,14 @@
       }
     }
 
-    function togglePhoto(id) {
-      const el = document.getElementById(`photo-${id}`);
-      if (el) el.classList.toggle('hidden');
+    function openImageModal(url, title) {
+      document.getElementById('modal-full-image').src = url;
+      document.getElementById('modal-image-title').innerText = title;
+      document.getElementById('image-modal').classList.remove('hidden');
+    }
+
+    function closeImageModal() {
+      document.getElementById('image-modal').classList.add('hidden');
     }
 
     function changeQty(id, change) {
@@ -798,7 +824,6 @@
       }
       total = Math.round(total);
 
-      // Запис замовлення у Supabase з перевіркою помилок
       try {
         const { data, error } = await _supabase.from('orders').insert([{
           client_name: name,
@@ -813,8 +838,6 @@
 
         if (error) {
           console.error('Помилка збереження в Supabase (orders):', error);
-        } else {
-          console.log('Замовлення успішно збережено в історію:', data);
         }
       } catch (err) {
         console.error('Order save to DB exception:', err);
